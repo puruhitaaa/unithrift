@@ -1,5 +1,5 @@
 {
-  "name": "@acme/validators",
+  "name": "@unithrift/validators",
   "private": true,
   "type": "module",
   "exports": {
@@ -21,12 +21,12 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@unithrift/eslint-config": "workspace:*",
+    "@unithrift/prettier-config": "workspace:*",
+    "@unithrift/tsconfig": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@unithrift/prettier-config"
 }

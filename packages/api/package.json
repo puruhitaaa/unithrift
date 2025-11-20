@@ -1,5 +1,5 @@
 {
-  "name": "@acme/api",
+  "name": "@unithrift/api",
   "private": true,
   "type": "module",
   "exports": {
@@ -18,20 +18,20 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@acme/auth": "workspace:*",
-    "@acme/db": "workspace:*",
-    "@acme/validators": "workspace:*",
     "@trpc/server": "catalog:",
+    "@unithrift/auth": "workspace:*",
+    "@unithrift/db": "workspace:*",
+    "@unithrift/validators": "workspace:*",
     "superjson": "2.2.3",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@unithrift/eslint-config": "workspace:*",
+    "@unithrift/prettier-config": "workspace:*",
+    "@unithrift/tsconfig": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@unithrift/prettier-config"
 }
