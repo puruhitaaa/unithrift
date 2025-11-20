@@ -43,12 +43,8 @@ apps
   │   ├─ Next.js 15
   │   ├─ React 19
   │   ├─ Tailwind CSS v4
-  │   └─ E2E Typesafe API Server & Client
-  └─ tanstack-start
-      ├─ Tanstack Start v1 (rc)
-      ├─ React 19
-      ├─ Tailwind CSS v4
       └─ E2E Typesafe API Server & Client
+
 packages
   ├─ api
   │   └─ tRPC v11 router definition
