@@ -1,5 +1,15 @@
 import { pgTable } from "drizzle-orm/pg-core";
 
+export const university = pgTable("university", (t) => ({
+  id: t.text().primaryKey(),
+  name: t.text().notNull(),
+  abbr: t.text().notNull(), // Abbreviation like "UI", "ITB"
+  domain: t.text(), // Email domain like "@ui.ac.id"
+  logo: t.text(),
+  createdAt: t.timestamp().notNull().defaultNow(),
+  updatedAt: t.timestamp().notNull().defaultNow(),
+}));
+
 export const user = pgTable("user", (t) => ({
   id: t.text().primaryKey(),
   name: t.text().notNull(),
@@ -8,6 +18,7 @@ export const user = pgTable("user", (t) => ({
   image: t.text(),
   createdAt: t.timestamp().notNull(),
   updatedAt: t.timestamp().notNull(),
+  universityId: t.text().references(() => university.id),
 }));
 
 export const session = pgTable("session", (t) => ({
