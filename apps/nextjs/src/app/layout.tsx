@@ -13,16 +13,17 @@ import "~/app/styles.css";
 export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
-      ? "https://turbo.t3.gg"
+      ? "https://unithrift.vercel.app"
       : "http://localhost:3000",
   ),
-  title: "Create T3 Turbo",
-  description: "Simple monorepo with shared backend for web & mobile apps",
+  title: "Unithrift - Preloved items you can actually afford!",
+  description: "Sell & buy secondhand/preloved items as an active Uni Student.",
   openGraph: {
-    title: "Create T3 Turbo",
-    description: "Simple monorepo with shared backend for web & mobile apps",
-    url: "https://create-t3-turbo.vercel.app",
-    siteName: "Create T3 Turbo",
+    title: "Unithrift - Preloved items you can actually afford!",
+    description:
+      "Sell & buy secondhand/preloved items as an active Uni Student.",
+    url: "https://unithrift.vercel.app",
+    siteName: "Unithrift - Preloved items you can actually afford!",
   },
   twitter: {
     card: "summary_large_image",
