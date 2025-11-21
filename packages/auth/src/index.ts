@@ -13,8 +13,8 @@ export function initAuth<
   productionUrl: string;
   secret: string | undefined;
 
-  discordClientId: string;
-  discordClientSecret: string;
+  googleClientId: string;
+  googleClientSecret: string;
   extraPlugins?: TExtraPlugins;
 }) {
   const config = {
@@ -25,6 +25,7 @@ export function initAuth<
       additionalFields: {
         role: {
           type: "string",
+          input: false,
         },
       },
     },
@@ -38,10 +39,10 @@ export function initAuth<
       ...(options.extraPlugins ?? []),
     ],
     socialProviders: {
-      discord: {
-        clientId: options.discordClientId,
-        clientSecret: options.discordClientSecret,
-        redirectURI: `${options.productionUrl}/api/auth/callback/discord`,
+      google: {
+        clientId: options.googleClientId,
+        clientSecret: options.googleClientSecret,
+        redirectURI: `${options.productionUrl}/api/auth/callback/google`,
       },
     },
     trustedOrigins: ["expo://"],

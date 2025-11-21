@@ -10,8 +10,14 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { z, ZodError } from "zod/v4";
 
-import type { Auth } from "@unithrift/auth";
+import type { Auth, Session } from "@unithrift/auth";
 import { db } from "@unithrift/db/client";
+
+export interface TRPCContext {
+  authApi: Auth["api"];
+  session: Session | null;
+  db: typeof db;
+}
 
 /**
  * 1. CONTEXT
@@ -29,7 +35,7 @@ import { db } from "@unithrift/db/client";
 export const createTRPCContext = async (opts: {
   headers: Headers;
   auth: Auth;
-}) => {
+}): Promise<TRPCContext> => {
   const authApi = opts.auth.api;
   const session = await authApi.getSession({
     headers: opts.headers,
@@ -46,7 +52,7 @@ export const createTRPCContext = async (opts: {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
   errorFormatter: ({ shape, error }) => ({
     ...shape,
