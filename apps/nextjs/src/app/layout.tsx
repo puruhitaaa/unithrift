@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { cn } from "@unithrift/ui";
 import { ThemeProvider, ThemeToggle } from "@unithrift/ui/theme";
@@ -59,10 +60,12 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <ThemeProvider>
-          <TRPCReactProvider>{props.children}</TRPCReactProvider>
-          <div className="absolute right-4 bottom-4">
-            <ThemeToggle />
-          </div>
+          <NuqsAdapter>
+            <TRPCReactProvider>{props.children}</TRPCReactProvider>
+            <div className="absolute right-4 bottom-4">
+              <ThemeToggle />
+            </div>
+          </NuqsAdapter>
           <Toaster />
         </ThemeProvider>
       </body>

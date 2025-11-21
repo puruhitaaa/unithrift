@@ -26,6 +26,7 @@
     "@unithrift/validators": "workspace:*",
     "better-auth": "catalog:",
     "next": "^16.0.0",
+    "nuqs": "^2.8.0",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "superjson": "2.2.3",
