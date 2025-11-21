@@ -21,6 +21,13 @@ export function initAuth<
     database: drizzleAdapter(db, {
       provider: "pg",
     }),
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+        },
+      },
+    },
     baseURL: options.baseUrl,
     secret: options.secret,
     plugins: [
