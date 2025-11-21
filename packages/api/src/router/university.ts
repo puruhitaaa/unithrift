@@ -3,7 +3,7 @@ import { z } from "zod";
 import { asc, desc, eq, like, or } from "@unithrift/db";
 import { university } from "@unithrift/db/schema";
 
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 
 export const universityRouter = createTRPCRouter({
   list: publicProcedure
@@ -45,7 +45,7 @@ export const universityRouter = createTRPCRouter({
       return items;
     }),
 
-  create: protectedProcedure
+  create: adminProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -79,7 +79,7 @@ export const universityRouter = createTRPCRouter({
       return newUniversity;
     }),
 
-  update: protectedProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -109,7 +109,7 @@ export const universityRouter = createTRPCRouter({
       return updatedUniversity;
     }),
 
-  delete: protectedProcedure
+  delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const [deletedUniversity] = await ctx.db
