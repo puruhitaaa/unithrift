@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
@@ -33,6 +33,8 @@ export function UniversityTable() {
     parseAsInteger.withDefault(0),
   );
   const [search, setSearch] = useQueryState("search");
+  const [localSearch, setLocalSearch] = useState(search ?? "");
+  const searchTimeout = useRef<number | null>(null);
   const [sortBy, setSortBy] = useQueryState(
     "sortBy",
     parseAsStringLiteral(["name", "createdAt"]).withDefault("name"),
@@ -44,8 +46,30 @@ export function UniversityTable() {
 
   const offset = pageIndex * limit;
 
-  // Fetch one extra item to know if there is a next page
-  const { data: rawUniversities, isLoading } = useQuery(
+  // debounce localSearch -> search query param
+  useEffect(() => {
+    // clear previous timer
+    if (searchTimeout.current) window.clearTimeout(searchTimeout.current);
+    // set a new timer to update the URL param and reset page
+    searchTimeout.current = window.setTimeout(() => {
+      void setSearch(localSearch || null);
+      void setPageIndex(0);
+    }, 250);
+    return () => {
+      if (searchTimeout.current) window.clearTimeout(searchTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSearch]);
+
+  // keep local search in sync with incoming `search` query param
+  useEffect(() => {
+    setLocalSearch(search ?? "");
+  }, [search]);
+
+  // Fetch items (we still request one extra item so we can detect a next page when server
+  // doesn't return a total count). Server now returns `{ items, total }` where total is the
+  // total number of items available. We support both shapes for backward compatibility.
+  const { data: rawUniversitiesResponse, isLoading } = useQuery(
     trpc.university.list.queryOptions({
       limit: Math.min(limit + 1, 100),
       offset,
@@ -53,17 +77,25 @@ export function UniversityTable() {
       sortBy,
       sortOrder,
     }),
-    // {
-    //   keepPreviousData: true,
-    // },
   );
 
-  const hasNextPage = (rawUniversities?.length ?? 0) > limit;
+  const rawUniversitiesArray = Array.isArray(rawUniversitiesResponse)
+    ? rawUniversitiesResponse
+    : (rawUniversitiesResponse?.items ?? []);
+  const totalFromServer = !Array.isArray(rawUniversitiesResponse)
+    ? rawUniversitiesResponse?.total
+    : undefined;
+  const hasNextPage = (rawUniversitiesArray?.length ?? 0) > limit;
   const universities = useMemo(
-    () => rawUniversities?.slice(0, limit) ?? [],
-    [rawUniversities, limit],
+    () => rawUniversitiesArray?.slice(0, limit) ?? [],
+    [rawUniversitiesArray, limit],
   );
-  const pageCount = hasNextPage ? pageIndex + 2 : pageIndex + 1;
+  const pageCount =
+    typeof totalFromServer === "number"
+      ? Math.max(1, Math.ceil(totalFromServer / limit))
+      : hasNextPage
+        ? pageIndex + 2
+        : pageIndex + 1;
 
   return (
     <>
@@ -75,12 +107,8 @@ export function UniversityTable() {
         <Input
           id="search"
           placeholder="Search universities"
-          value={search ?? ""}
-          onChange={(e) => {
-            void setSearch(e.target.value || null);
-            // reset page when searching
-            void setPageIndex(0);
-          }}
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
         />
         <Select
           value={sortBy}
@@ -115,7 +143,8 @@ export function UniversityTable() {
         pageCount={pageCount}
         controlledPageIndex={pageIndex}
         controlledPageSize={limit}
-        onPaginationChange={({ pageIndex: newPageIndex, pageSize }) => {
+        onPaginationChange={(p: { pageIndex: number; pageSize: number }) => {
+          const { pageIndex: newPageIndex, pageSize } = p;
           if (newPageIndex !== pageIndex) void setPageIndex(newPageIndex);
           if (pageSize !== limit) {
             void setLimit(pageSize);
@@ -124,7 +153,9 @@ export function UniversityTable() {
           }
         }}
         controlledSorting={[{ id: sortBy, desc: sortOrder === "desc" }]}
-        onSortingChange={(sorting) => {
+        onSortingChange={(
+          sorting: import("@tanstack/react-table").SortingState,
+        ) => {
           const first = sorting[0];
           if (!first) return;
           void setSortBy(first.id as "name" | "createdAt");

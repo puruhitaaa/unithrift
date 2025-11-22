@@ -41,7 +41,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@unithrift/ui/select";
-import { Skeleton } from "@unithrift/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -50,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from "@unithrift/ui/table";
+import { TableSkeleton } from "@unithrift/ui/table-skeleton";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -213,17 +213,13 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              Array.from({
-                length: table.getState().pagination.pageSize,
-              }).map((_, i) => (
-                <TableRow key={i}>
-                  {table.getVisibleLeafColumns().map((column) => (
-                    <TableCell key={column.id}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              <>
+                <TableSkeleton
+                  bodyOnly
+                  columns={table.getVisibleLeafColumns().length}
+                  rows={table.getState().pagination.pageSize}
+                />
+              </>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow

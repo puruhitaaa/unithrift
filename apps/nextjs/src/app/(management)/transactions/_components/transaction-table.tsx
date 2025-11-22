@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useMemo,
-  // useState
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsInteger, parseAsStringLiteral, useQueryState } from "nuqs";
 
@@ -35,6 +32,8 @@ export function TransactionTable() {
     parseAsInteger.withDefault(0),
   );
   const [search, setSearch] = useQueryState("search");
+  const [localSearch, setLocalSearch] = useState(search ?? "");
+  const searchTimeout = useRef<number | null>(null);
   const [sortBy, setSortBy] = useQueryState(
     "sortBy",
     parseAsStringLiteral(["createdAt", "amount"]).withDefault("createdAt"),
@@ -46,8 +45,30 @@ export function TransactionTable() {
 
   const offset = pageIndex * limit;
 
-  // Fetch one extra item to know if there is a next page
-  const { data: rawTransactions, isLoading } = useQuery(
+  // debounce localSearch -> search query param
+  useEffect(() => {
+    // clear previous timer
+    if (searchTimeout.current) window.clearTimeout(searchTimeout.current);
+    // set a new timer to update the URL param and reset page
+    searchTimeout.current = window.setTimeout(() => {
+      void setSearch(localSearch || null);
+      void setPageIndex(0);
+    }, 250);
+    return () => {
+      if (searchTimeout.current) window.clearTimeout(searchTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSearch]);
+
+  // keep local search in sync with incoming `search` query param
+  useEffect(() => {
+    setLocalSearch(search ?? "");
+  }, [search]);
+
+  // Fetch items (we still request one extra item so we can detect a next page when server
+  // doesn't return a total count). Server now returns `{ items, total }` where total is the
+  // total number of items available. We support both shapes for backward compatibility.
+  const { data: rawTransactionsResponse, isLoading } = useQuery(
     trpc.transaction.list.queryOptions({
       limit: Math.min(limit + 1, 100),
       offset,
@@ -57,34 +78,36 @@ export function TransactionTable() {
     }),
   );
 
-  const hasNextPage = (rawTransactions?.length ?? 0) > limit;
+  const rawTransactionsArray = Array.isArray(rawTransactionsResponse)
+    ? rawTransactionsResponse
+    : (rawTransactionsResponse?.items ?? []);
+
+  const totalFromServer = !Array.isArray(rawTransactionsResponse)
+    ? rawTransactionsResponse?.total
+    : undefined;
+
+  const hasNextPage = (rawTransactionsArray?.length ?? 0) > limit;
+
   const transactions = useMemo(
-    () => rawTransactions?.slice(0, limit) ?? [],
-    [rawTransactions, limit],
+    () => rawTransactionsArray?.slice(0, limit) ?? [],
+    [rawTransactionsArray, limit],
   );
-  const pageCount = hasNextPage ? pageIndex + 2 : pageIndex + 1;
+
+  const pageCount =
+    typeof totalFromServer === "number"
+      ? Math.max(1, Math.ceil(totalFromServer / limit))
+      : hasNextPage
+        ? pageIndex + 2
+        : pageIndex + 1;
 
   return (
     <>
-      {/* Note: We don't have a create dialog for transactions as they are created by users buying items. 
-          However, we might need the form dialog for editing, which is handled by the columns actions. 
-          But if we wanted a global edit dialog state we could lift it here. 
-          For now, the columns handle the edit dialog state internally per row, 
-          but wait, the university table had the create dialog here. 
-          The edit dialog is usually inside the actions cell. 
-          So I don't need to render TransactionFormDialog here unless I have a "Create Transaction" button, which I don't.
-      */}
-
       <div className="flex items-center gap-2">
         <Input
           id="search"
           placeholder="Search by Transaction ID"
-          value={search ?? ""}
-          onChange={(e) => {
-            void setSearch(e.target.value || null);
-            // reset page when searching
-            void setPageIndex(0);
-          }}
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
         />
         <Select
           value={sortBy}
@@ -119,7 +142,8 @@ export function TransactionTable() {
         pageCount={pageCount}
         controlledPageIndex={pageIndex}
         controlledPageSize={limit}
-        onPaginationChange={({ pageIndex: newPageIndex, pageSize }) => {
+        onPaginationChange={(p: { pageIndex: number; pageSize: number }) => {
+          const { pageIndex: newPageIndex, pageSize } = p;
           if (newPageIndex !== pageIndex) void setPageIndex(newPageIndex);
           if (pageSize !== limit) {
             void setLimit(pageSize);
@@ -128,7 +152,9 @@ export function TransactionTable() {
           }
         }}
         controlledSorting={[{ id: sortBy, desc: sortOrder === "desc" }]}
-        onSortingChange={(sorting) => {
+        onSortingChange={(
+          sorting: import("@tanstack/react-table").SortingState,
+        ) => {
           const first = sorting[0];
           if (!first) return;
           void setSortBy(first.id as "createdAt" | "amount");

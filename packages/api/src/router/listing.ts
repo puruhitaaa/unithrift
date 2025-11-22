@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-import { and, asc, desc, eq, gte, like, lte } from "@unithrift/db";
+import { and, asc, desc, eq, gte, like, lte, sql } from "@unithrift/db";
 import {
   listing,
   listingCategoryEnum,
@@ -90,7 +90,13 @@ export const listingRouter = createTRPCRouter({
         },
       });
 
-      return items;
+      const [countResult] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(listing)
+        .where(where);
+      const total = Number(countResult?.count ?? 0);
+
+      return { items, total };
     }),
 
   create: protectedProcedure

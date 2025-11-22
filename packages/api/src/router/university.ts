@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { asc, desc, eq, like, or } from "@unithrift/db";
+import { asc, desc, eq, like, or, sql } from "@unithrift/db";
 import { university } from "@unithrift/db/schema";
 
 import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
@@ -42,7 +42,13 @@ export const universityRouter = createTRPCRouter({
         orderBy: [orderBy],
       });
 
-      return items;
+      const [countResult] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(university)
+        .where(where);
+      const total = Number(countResult?.count ?? 0);
+
+      return { items, total };
     }),
 
   create: adminProcedure

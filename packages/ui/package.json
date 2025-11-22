@@ -38,6 +38,7 @@
     "./site-header": "./src/site-header.tsx",
     "./sonner": "./src/sonner.tsx",
     "./table": "./src/table.tsx",
+    "./table-skeleton": "./src/table-skeleton.tsx",
     "./tabs": "./src/tabs.tsx",
     "./toggle": "./src/toggle.tsx",
     "./toggle-group": "./src/toggle-group.tsx",
