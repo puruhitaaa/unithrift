@@ -27,7 +27,7 @@
     "ios": "expo run:ios"
   },
   "devDependencies": {
-    "@turbo/gen": "^2.5.8",
+    "@turbo/gen": "^2.6.1",
     "@unithrift/prettier-config": "workspace:*",
     "dotenv-cli": "^10.0.0",
     "prettier": "catalog:",
