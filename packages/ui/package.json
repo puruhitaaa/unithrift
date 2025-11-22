@@ -40,7 +40,8 @@
     "./table": "./src/table.tsx",
     "./tabs": "./src/tabs.tsx",
     "./toggle": "./src/toggle.tsx",
-    "./toggle-group": "./src/toggle-group.tsx"
+    "./toggle-group": "./src/toggle-group.tsx",
+    "./textarea": "./src/textarea.tsx"
   },
   "license": "MIT",
   "scripts": {
