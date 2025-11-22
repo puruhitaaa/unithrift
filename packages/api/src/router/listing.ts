@@ -1,12 +1,13 @@
 import { z } from "zod/v4";
 
-import { and, asc, desc, eq, gte, like, lte, sql } from "@unithrift/db";
+import { and, asc, desc, eq, gte, inArray, lte, sql } from "@unithrift/db";
 import {
   listing,
   listingCategoryEnum,
   listingConditionEnum,
   listingMedia,
   listingMediaTypeEnum,
+  transaction,
 } from "@unithrift/db/schema";
 
 import {
@@ -21,7 +22,8 @@ export const listingRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(20),
-        offset: z.number().min(0).default(0),
+        cursor: z.number().min(0).default(0), // Use cursor for infinite scroll (offset)
+        offset: z.number().min(0).optional(), // Keep for backward compatibility
         universityId: z.string().optional(),
         category: z.enum(listingCategoryEnum.enumValues).optional(),
         condition: z.enum(listingConditionEnum.enumValues).optional(),
@@ -35,6 +37,7 @@ export const listingRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const {
         limit,
+        cursor,
         offset,
         universityId,
         category,
@@ -46,23 +49,15 @@ export const listingRouter = createTRPCRouter({
         sortOrder,
       } = input;
 
+      const realOffset = offset ?? cursor;
+
       const where = and(
-        // eq(listing.status, "ACTIVE"), // Remove this to show all listings in management? Or make it optional? University list shows all. I'll show all for now or maybe filter by status if provided.
-        // Actually, for management we probably want to see all statuses.
-        // But the existing router might be used by the public app which expects only ACTIVE.
-        // I should probably add a `status` filter defaulting to ACTIVE if not in management mode?
-        // Or just remove the hardcoded "ACTIVE" and let the client filter?
-        // The prompt says "copy implementation of university page". University page shows all.
-        // I will remove the hardcoded status check or make it an input.
-        // To be safe for existing app, I should probably default status to "ACTIVE" if not specified?
-        // But `universityRouter` doesn't have status.
-        // I'll add `status` to input, optional.
         universityId ? eq(listing.universityId, universityId) : undefined,
         category ? eq(listing.category, category) : undefined,
         condition ? eq(listing.condition, condition) : undefined,
         minPrice ? gte(listing.price, minPrice) : undefined,
         maxPrice ? lte(listing.price, maxPrice) : undefined,
-        search ? like(listing.title, `%${search}%`) : undefined,
+        search ? sql`${listing.title} ILIKE ${`%${search}%`}` : undefined,
       );
 
       const orderBy =
@@ -81,7 +76,7 @@ export const listingRouter = createTRPCRouter({
       const items = await ctx.db.query.listing.findMany({
         where,
         limit,
-        offset,
+        offset: realOffset,
         orderBy: [orderBy],
         with: {
           media: true,
@@ -96,7 +91,12 @@ export const listingRouter = createTRPCRouter({
         .where(where);
       const total = Number(countResult?.count ?? 0);
 
-      return { items, total };
+      const nextCursor =
+        realOffset + items.length < total
+          ? realOffset + items.length
+          : undefined;
+
+      return { items, total, nextCursor };
     }),
 
   create: protectedProcedure
@@ -222,5 +222,122 @@ export const listingRouter = createTRPCRouter({
       }
 
       return item;
+    }),
+
+  getFreshFinds: publicProcedure
+    .input(
+      z.object({
+        category: z.enum(listingCategoryEnum.enumValues).optional(),
+        universityId: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const where = and(
+        input.category ? eq(listing.category, input.category) : undefined,
+        input.universityId
+          ? eq(listing.universityId, input.universityId)
+          : undefined,
+      );
+
+      const items = await ctx.db.query.listing.findMany({
+        where,
+        orderBy: [desc(listing.createdAt)],
+        limit: 4,
+        with: {
+          media: true,
+          seller: true,
+          university: true,
+        },
+      });
+
+      const [countResult] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(listing)
+        .where(where);
+      const total = Number(countResult?.count ?? 0);
+
+      return { items, total };
+    }),
+
+  getTopPicks: publicProcedure
+    .input(
+      z.object({
+        category: z.enum(listingCategoryEnum.enumValues).optional(),
+        universityId: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // 1. Find sellers with most completed transactions
+      const topSellers = await ctx.db
+        .select({
+          sellerId: transaction.sellerId,
+          count: sql<number>`count(*)`,
+        })
+        .from(transaction)
+        .where(eq(transaction.status, "COMPLETED"))
+        .groupBy(transaction.sellerId)
+        .orderBy(desc(sql<number>`count(*)`))
+        .limit(8);
+
+      const topSellerIds = topSellers.map((s) => s.sellerId);
+
+      let items;
+      let total = 0;
+
+      if (topSellerIds.length > 0) {
+        const where = and(
+          inArray(listing.sellerId, topSellerIds),
+          input.category ? eq(listing.category, input.category) : undefined,
+          input.universityId
+            ? eq(listing.universityId, input.universityId)
+            : undefined,
+        );
+
+        items = await ctx.db.query.listing.findMany({
+          where,
+          limit: 8,
+          with: {
+            media: true,
+            seller: true,
+            university: true,
+          },
+        });
+
+        if (items.length > 0) {
+          const [countResult] = await ctx.db
+            .select({ count: sql<number>`count(*)` })
+            .from(listing)
+            .where(where);
+          total = Number(countResult?.count ?? 0);
+          return { items, total };
+        }
+      }
+
+      // Fallback: Oldest listings
+      const where = and(
+        input.category ? eq(listing.category, input.category) : undefined,
+        input.universityId
+          ? eq(listing.universityId, input.universityId)
+          : undefined,
+      );
+
+      items = await ctx.db.query.listing.findMany({
+        where,
+        orderBy: [asc(listing.createdAt)],
+        limit: 8,
+        with: {
+          media: true,
+          seller: true,
+          university: true,
+        },
+      });
+
+      const [countResult] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(listing)
+        .where(where);
+      total = Number(countResult?.count ?? 0);
+
+      return { items, total };
     }),
 });

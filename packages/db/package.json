@@ -26,7 +26,8 @@
     "push": "pnpm with-env drizzle-kit push",
     "studio": "pnpm with-env drizzle-kit studio",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "with-env": "dotenv -e ../../.env --"
+    "with-env": "dotenv -e ../../.env --",
+    "seed": "pnpm with-env pnpm dlx tsx seed.ts"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
