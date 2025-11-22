@@ -105,7 +105,7 @@ export const listingRouter = createTRPCRouter({
         media: z
           .array(
             z.object({
-              url: z.string().url(),
+              url: z.url(),
               publicId: z.string().optional(),
               type: z.enum(listingMediaTypeEnum.enumValues),
               order: z.number().default(0),
@@ -200,7 +200,7 @@ export const listingRouter = createTRPCRouter({
     }),
 
   get: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.uuid() }))
     .query(async ({ ctx, input }) => {
       const item = await ctx.db.query.listing.findFirst({
         where: eq(listing.id, input.id),
