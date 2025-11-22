@@ -38,7 +38,7 @@ export function NavUser() {
                   alt={session?.user.name}
                 />
                 <AvatarFallback className="rounded-lg">
-                  {session?.user.name?.[0]}
+                  {session?.user.name[0]}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -66,7 +66,7 @@ export function NavUser() {
                     alt={session?.user.name}
                   />
                   <AvatarFallback className="rounded-lg">
-                    {session?.user.name?.[0]}
+                    {session?.user.name[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -80,7 +80,10 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="bg-destructive cursor-pointer">
+            <DropdownMenuItem
+              className="bg-destructive cursor-pointer"
+              onClick={() => void authClient.signOut()}
+            >
               <IconLogout />
               Log out
             </DropdownMenuItem>
