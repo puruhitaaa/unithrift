@@ -5,3 +5,5 @@
 @import "nativewind/theme";
 
 @import "@unithrift/tailwind-config/theme";
+
+@source "./**/*.{tsx}";
