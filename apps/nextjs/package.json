@@ -33,6 +33,7 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-hook-form": "^7.66.1",
+    "recharts": "2.15.4",
     "superjson": "2.2.3",
     "zod": "catalog:"
   },
