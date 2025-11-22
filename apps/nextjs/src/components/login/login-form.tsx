@@ -19,7 +19,10 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const handleGoogleLogin = async () => {
     try {
-      await authClient.signIn.social({ provider: "google" });
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
