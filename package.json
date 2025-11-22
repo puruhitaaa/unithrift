@@ -2,7 +2,7 @@
   "name": "unithrift",
   "private": true,
   "engines": {
-    "node": "^22.21.0",
+    "node": "^23.9.0",
     "pnpm": "^10.23.0"
   },
   "packageManager": "pnpm@10.23.0",

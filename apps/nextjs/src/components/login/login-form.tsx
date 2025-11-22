@@ -27,7 +27,7 @@ export function LoginForm({
       if (err instanceof Error) {
         toast.error(err.message);
       } else {
-        toast.error("Something went wrong trying to use the discord provider.");
+        toast.error("Something went wrong trying to use the google provider.");
       }
     }
   };
