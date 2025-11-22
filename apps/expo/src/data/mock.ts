@@ -1,4 +1,4 @@
-import { CategoryUI, ListingUI } from "../types/ui";
+import type { CategoryUI, ListingUI } from "../types/ui";
 
 export const TOP_SELLERS: ListingUI[] = [
   {
@@ -58,7 +58,7 @@ export const FRESH_FINDS: ListingUI[] = [
     sellerAvatar:
       "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTF8fHVzZXJ8ZW58MHx8MHx8fDA%3D",
     condition: "GOOD",
-    category: "ELECTRONICS",
+    category: "Electronics",
   },
   {
     id: "2",
@@ -70,7 +70,7 @@ export const FRESH_FINDS: ListingUI[] = [
     sellerAvatar:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D",
     condition: "LIKE_NEW",
-    category: "BOOKS",
+    category: "Books",
   },
   {
     id: "3",
@@ -82,7 +82,7 @@ export const FRESH_FINDS: ListingUI[] = [
     sellerAvatar:
       "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fHVzZXJ8ZW58MHx8MHx8fDA%3D",
     condition: "GOOD", // Mapped from Excellent to closest enum
-    category: "FURNITURE",
+    category: "Furniture",
   },
   {
     id: "4",
@@ -94,15 +94,15 @@ export const FRESH_FINDS: ListingUI[] = [
     sellerAvatar:
       "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjh8fHVzZXJ8ZW58MHx8MHx8fDA%3D",
     condition: "GOOD",
-    category: "CLOTHING",
+    category: "Clothing",
   },
 ];
 
 export const CATEGORIES: CategoryUI[] = [
-  { id: "1", name: "All", icon: "📱" },
-  { id: "2", name: "Electronics", icon: "💻" },
-  { id: "3", name: "Books", icon: "📚" },
-  { id: "4", name: "Clothing", icon: "👕" },
-  { id: "5", name: "Furniture", icon: "🪑" },
-  { id: "6", name: "Other", icon: "📦" },
+  { id: "clothing", name: "Clothing", icon: "👕" },
+  { id: "books", name: "Books", icon: "📚" },
+  { id: "electronics", name: "Electronics", icon: "💻" },
+  { id: "furniture", name: "Furniture", icon: "🪑" },
+  { id: "stationery", name: "Stationery", icon: "✏️" },
+  { id: "other", name: "Other", icon: "📦" },
 ];

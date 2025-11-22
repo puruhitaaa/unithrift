@@ -9,7 +9,7 @@ import {
   ShoppingCart,
 } from "lucide-react-native";
 
-import { Header } from "../../components/ui/Header";
+import { Header } from "../components/ui/Header";
 
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");

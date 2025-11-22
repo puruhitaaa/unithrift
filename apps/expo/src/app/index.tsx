@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 
-import { FreshFindCard } from "../../components/home/FreshFindCard";
-import { PopularOnCampusCard } from "../../components/home/PopularOnCampusCard";
-import { TopSellerCard } from "../../components/home/TopSellerCard";
-import { Header } from "../../components/ui/Header";
-import { FRESH_FINDS, TOP_SELLERS } from "../../data/mock";
+import { FreshFindCard } from "../components/home/FreshFindCard";
+import { PopularOnCampusCard } from "../components/home/PopularOnCampusCard";
+import { TopSellerCard } from "../components/home/TopSellerCard";
+import { Header } from "../components/ui/Header";
+import { FRESH_FINDS, TOP_SELLERS } from "../data/mock";
 
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("1");
+  const [selectedCategory, setSelectedCategory] = useState("clothing");
 
   return (
     <View className="flex-1 bg-gray-50">

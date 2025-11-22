@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { PlusCircle } from "lucide-react-native";
 
-import { Header } from "../../components/ui/Header";
-import { CATEGORIES } from "../../data/mock";
+import { Header } from "../components/ui/Header";
+import { CATEGORIES } from "../data/mock";
 
 export default function SellScreen() {
   const [selectedCategory, setSelectedCategory] = useState("1");

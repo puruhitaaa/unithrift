@@ -1,8 +1,8 @@
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Heart } from "lucide-react-native";
 
-import { Header } from "../../components/ui/Header";
-import { FRESH_FINDS } from "../../data/mock";
+import { Header } from "../components/ui/Header";
+import { FRESH_FINDS } from "../data/mock";
 
 export default function FavoritesScreen() {
   return (

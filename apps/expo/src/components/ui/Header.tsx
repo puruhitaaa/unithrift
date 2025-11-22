@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Filter, MapPin, Search, User } from "lucide-react-native";
+import { ChevronDown, Filter, MapPin, Search } from "lucide-react-native";
 
 import { CATEGORIES } from "../../data/mock";
 
@@ -31,12 +31,12 @@ export function Header({
           <Text className="text-2xl font-bold text-gray-900">Unithrift</Text>
           <View className="mt-1 flex-row items-center">
             <MapPin size={16} color="#8B0A1A" />
-            <Text className="ml-1 text-gray-600">Stanford University</Text>
+            <TouchableOpacity className="ml-1 flex-row items-center">
+              <Text className="mr-1 text-gray-600">Stanford University</Text>
+              <ChevronDown size={16} color="#666666" />
+            </TouchableOpacity>
           </View>
         </View>
-        <TouchableOpacity className="rounded-full bg-gray-100 p-2">
-          <User size={24} color="#333333" />
-        </TouchableOpacity>
       </View>
 
       {/* Search Bar - Only show if requested */}
