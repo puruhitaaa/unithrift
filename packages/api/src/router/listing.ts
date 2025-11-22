@@ -224,6 +224,27 @@ export const listingRouter = createTRPCRouter({
       return item;
     }),
 
+  byId: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const item = await ctx.db.query.listing.findFirst({
+        where: eq(listing.id, input.id),
+        with: {
+          media: {
+            orderBy: [asc(listingMedia.order)],
+          },
+          seller: true,
+          university: true,
+        },
+      });
+
+      if (!item) {
+        throw new Error("Listing not found");
+      }
+
+      return item;
+    }),
+
   getFreshFinds: publicProcedure
     .input(
       z.object({

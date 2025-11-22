@@ -10,6 +10,10 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import type { RouterInputs, RouterOutputs } from "../utils/api";
 import { FreshFindCard } from "../components/home/FreshFindCard";
+import {
+  ListingSkeleton,
+  TopPickSkeleton,
+} from "../components/home/ListingSkeleton";
 import { PopularOnCampusCard } from "../components/home/PopularOnCampusCard";
 import { TopSellerCard } from "../components/home/TopSellerCard";
 import { Header } from "../components/ui/Header";
@@ -38,14 +42,14 @@ export default function HomeScreen() {
     ? (selectedCategory.toUpperCase() as RouterInputs["listing"]["getFreshFinds"]["category"])
     : undefined;
 
-  const { data: freshFinds } = useQuery(
+  const { data: freshFinds, isLoading: freshFindLoading } = useQuery(
     trpc.listing.getFreshFinds.queryOptions({
       category: categoryInput,
       universityId: selectedUniversityId,
     }),
   );
 
-  const { data: topPicks } = useQuery(
+  const { data: topPicks, isLoading: topPicksLoading } = useQuery(
     trpc.listing.getTopPicks.queryOptions({
       category: categoryInput,
       universityId: selectedUniversityId,
@@ -156,18 +160,32 @@ export default function HomeScreen() {
               )}
             </View>
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              pagingEnabled
-              className="max-h-48"
-            >
-              <View className="flex-row gap-4">
-                {topPicks?.items.map((item) => (
-                  <TopSellerCard key={item.id} item={item} />
-                ))}
-              </View>
-            </ScrollView>
+            {topPicksLoading ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="max-h-48"
+              >
+                <View className="flex-row gap-4">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <TopPickSkeleton key={index} />
+                  ))}
+                </View>
+              </ScrollView>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                className="max-h-48"
+              >
+                <View className="flex-row gap-4">
+                  {topPicks?.items.map((item) => (
+                    <TopSellerCard key={item.id} item={item} />
+                  ))}
+                </View>
+              </ScrollView>
+            )}
           </View>
 
           {/* Fresh Finds Section */}
@@ -181,11 +199,19 @@ export default function HomeScreen() {
               )}
             </View>
 
-            <View className="flex-row flex-wrap gap-4">
-              {freshFinds?.items.map((listing) => (
-                <FreshFindCard key={listing.id} item={listing} />
-              ))}
-            </View>
+            {freshFindLoading ? (
+              <View className="flex-row flex-wrap gap-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <ListingSkeleton key={index} />
+                ))}
+              </View>
+            ) : (
+              <View className="flex-row flex-wrap gap-4">
+                {freshFinds?.items.map((listing) => (
+                  <FreshFindCard key={listing.id} item={listing} />
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Popular on Campus Section */}
