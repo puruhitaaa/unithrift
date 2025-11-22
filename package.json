@@ -31,7 +31,7 @@
     "@unithrift/prettier-config": "workspace:*",
     "dotenv-cli": "^10.0.0",
     "prettier": "catalog:",
-    "turbo": "^2.5.8",
+    "turbo": "^2.6.1",
     "typescript": "catalog:"
   },
   "prettier": "@unithrift/prettier-config"
