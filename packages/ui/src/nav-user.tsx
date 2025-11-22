@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { IconDotsVertical, IconLogout } from "@tabler/icons-react";
 
 import { authClient } from "@unithrift/auth/client";
@@ -22,6 +23,17 @@ import {
 export function NavUser() {
   const { data: session } = authClient.useSession();
   const { isMobile } = useSidebar();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/login");
+        },
+      },
+    });
+  };
 
   return (
     <SidebarMenu>
@@ -82,7 +94,7 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="bg-destructive cursor-pointer"
-              onClick={() => void authClient.signOut()}
+              onClick={handleLogout}
             >
               <IconLogout />
               Log out

@@ -1,13 +1,10 @@
 import type { NextRequest } from "next/server";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { auth } from "./auth/server";
+import { getSession } from "./auth/server";
 
 export async function proxy(request: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   // THIS IS NOT SECURE!
   // This is the recommended approach to optimistically redirect users
