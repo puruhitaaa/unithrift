@@ -12,6 +12,7 @@ import {
   SellerInfo,
 } from "~/components/item-detail";
 import { trpc } from "~/utils/api";
+import { authClient } from "~/utils/auth";
 
 export type ItemDetailData = RouterOutputs["listing"]["byId"];
 
@@ -25,13 +26,26 @@ export default function ItemDetailScreen() {
     error,
   } = useQuery(
     trpc.listing.byId.queryOptions({
-      id: id!,
+      id,
     }),
   );
 
-  const handleContactSeller = () => {
-    // TODO: Implement chat or messaging interface
-    console.log("Contacting seller for item:", id);
+  const { data: session } = authClient.useSession();
+
+  const handlePurchase = () => {
+    // If the user is not authenticated, redirect them to the login screen
+    // and preserve a redirectTo param so they can come back to the item page
+    if (!session) {
+      // Pass the redirectTo as route param so login can redirect back after successful sign-in
+      router.push({
+        pathname: "/login",
+        params: { redirectTo: `/item?id=${id}` },
+      });
+      return;
+    }
+
+    // TODO: Implement checkout flow; for now, navigate to a checkout route
+    router.push({ pathname: "/checkout", params: { id: id } });
   };
 
   if (isLoading) {
@@ -95,7 +109,7 @@ export default function ItemDetailScreen() {
             }}
           />
 
-          <ContactButton onPress={handleContactSeller} />
+          <ContactButton onPress={handlePurchase} />
         </ScrollView>
       </SafeAreaView>
     </>

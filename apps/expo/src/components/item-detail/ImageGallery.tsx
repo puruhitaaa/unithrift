@@ -4,11 +4,17 @@ import { Dimensions, Image, ScrollView, View } from "react-native";
 const { width } = Dimensions.get("window");
 
 interface ImageGalleryProps {
-  images: string[];
+  images?: string[];
 }
+
+const DEFAULT_REBRAND_IMAGE = "https://rebrand.ly/opp6kzm"; // contains 'rebrand'
 
 export function ImageGallery({ images }: ImageGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // If the images array is empty, render a fallback image with 'rebrand' in the URL
+  const currentImages =
+    images && images.length > 0 ? images : [DEFAULT_REBRAND_IMAGE];
 
   return (
     <View className="relative">
@@ -23,7 +29,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
         scrollEventThrottle={16}
         className="max-h-80"
       >
-        {images.map((image, index) => (
+        {currentImages.map((image, index) => (
           <Image
             key={index}
             source={{ uri: image }}
@@ -35,7 +41,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
 
       {/* Image indicators */}
       <View className="absolute right-0 bottom-4 left-0 flex-row justify-center space-x-2">
-        {images.map((_, index) => (
+        {currentImages.map((_, index) => (
           <View
             key={index}
             className={`h-2 w-2 rounded-full ${
