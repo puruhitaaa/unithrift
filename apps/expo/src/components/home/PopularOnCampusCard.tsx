@@ -1,4 +1,5 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 
 export function PopularOnCampusCard() {
   return (
@@ -8,8 +9,9 @@ export function PopularOnCampusCard() {
           source={{
             uri: "https://images.unsplash.com/photo-1743485753941-5d515a62628d?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fExvY2FsJTIwbWFya2V0JTIwc3RyZWV0JTIwZm9vZHxlbnwwfHwwfHx8MA%3D%3D",
           }}
-          className="h-20 w-20 rounded-lg"
-          resizeMode="cover"
+          style={{ width: 80, height: 80, borderRadius: 8 }}
+          contentFit="cover"
+          transition={200}
         />
         <View className="ml-4 flex-1">
           <Text className="font-bold text-gray-900">Campus Flea Market</Text>

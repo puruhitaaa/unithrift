@@ -1,4 +1,5 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -15,7 +16,7 @@ export function TopSellerCard({ item }: TopSellerCardProps) {
 
   const handlePress = () => {
     router.push({
-      pathname: "/item/[id]" as never,
+      pathname: "/item/[id]",
       params: { id: item.id },
     });
   };
@@ -30,8 +31,9 @@ export function TopSellerCard({ item }: TopSellerCardProps) {
         <View className="relative">
           <Image
             source={{ uri: imageUrl }}
-            className="h-32 w-full"
-            resizeMode="cover"
+            style={{ width: "100%", height: 128 }}
+            contentFit="cover"
+            transition={200}
           />
         </View>
 

@@ -24,6 +24,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="search" />
+        <Stack.Screen name="discover" />
         <Stack.Screen name="sell" />
         <Stack.Screen name="profile" />
       </Stack>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
 
 import { FreshFindsSection } from "../components/home/FreshFindsSection";
 import { PopularOnCampusCard } from "../components/home/PopularOnCampusCard";
@@ -17,44 +18,47 @@ export default function HomeScreen() {
   >();
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <SmartHeader
-        showSearch={true}
-        showCategories={true}
-        onSearchChange={setDebouncedSearchQuery}
-        onCategoryChange={setSelectedCategory}
-        onUniversityChange={setSelectedUniversityId}
-      />
+    <>
+      <StatusBar style="dark" />
+      <View className="flex-1 bg-gray-50">
+        <SmartHeader
+          showSearch={true}
+          showCategories={true}
+          onSearchChange={setDebouncedSearchQuery}
+          onCategoryChange={setSelectedCategory}
+          onUniversityChange={setSelectedUniversityId}
+        />
 
-      {debouncedSearchQuery ? (
-        <View className="flex-1 p-4">
-          <SearchResultsSection
-            searchQuery={debouncedSearchQuery}
-            category={selectedCategory}
-            universityId={selectedUniversityId}
-          />
-        </View>
-      ) : (
-        <ScrollView className="flex-1 p-4">
-          <TopPicksSection
-            category={selectedCategory}
-            universityId={selectedUniversityId}
-          />
-
-          <FreshFindsSection
-            category={selectedCategory}
-            universityId={selectedUniversityId}
-          />
-
-          {/* Popular on Campus Section */}
-          <View className="mb-8">
-            <Text className="mb-4 text-lg font-semibold text-gray-900">
-              Popular on Campus
-            </Text>
-            <PopularOnCampusCard />
+        {debouncedSearchQuery ? (
+          <View className="flex-1 p-4">
+            <SearchResultsSection
+              searchQuery={debouncedSearchQuery}
+              category={selectedCategory}
+              universityId={selectedUniversityId}
+            />
           </View>
-        </ScrollView>
-      )}
-    </View>
+        ) : (
+          <ScrollView className="flex-1 p-4">
+            <TopPicksSection
+              category={selectedCategory}
+              universityId={selectedUniversityId}
+            />
+
+            <FreshFindsSection
+              category={selectedCategory}
+              universityId={selectedUniversityId}
+            />
+
+            {/* Popular on Campus Section */}
+            <View className="mb-8">
+              <Text className="mb-4 text-lg font-semibold text-gray-900">
+                Popular on Campus
+              </Text>
+              <PopularOnCampusCard />
+            </View>
+          </ScrollView>
+        )}
+      </View>
+    </>
   );
 }

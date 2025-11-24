@@ -1,4 +1,5 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -16,7 +17,7 @@ export function FreshFindCard({ item }: FreshFindCardProps) {
 
   const handlePress = () => {
     router.push({
-      pathname: "/item/[id]" as never,
+      pathname: "/item/[id]",
       params: { id: item.id },
     });
   };
@@ -31,8 +32,9 @@ export function FreshFindCard({ item }: FreshFindCardProps) {
         <View className="relative">
           <Image
             source={{ uri: imageUrl }}
-            className="h-32 w-full"
-            resizeMode="cover"
+            style={{ width: "100%", height: 128 }}
+            contentFit="cover"
+            transition={200}
           />
         </View>
 
@@ -59,7 +61,9 @@ export function FreshFindCard({ item }: FreshFindCardProps) {
           <View className="mt-2 flex-row items-center">
             <Image
               source={{ uri: sellerAvatar }}
-              className="h-6 w-6 rounded-full"
+              style={{ width: 24, height: 24, borderRadius: 12 }}
+              contentFit="cover"
+              transition={200}
             />
             <Text
               className="ml-2 truncate text-xs text-gray-500"

@@ -1,4 +1,5 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import {
   Bookmark,
   Heart,
@@ -36,7 +37,9 @@ export function ProfileContent({
       <View className="mt-4 items-center">
         <Image
           source={{ uri: userImage }}
-          className="mb-4 h-24 w-24 rounded-full"
+          style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 16 }}
+          contentFit="cover"
+          transition={200}
         />
         <Text className="text-2xl font-bold text-gray-900">{userName}</Text>
         <View className="mt-1 flex-row items-center">

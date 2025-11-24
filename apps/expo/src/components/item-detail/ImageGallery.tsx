@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Dimensions, Image, ScrollView, View } from "react-native";
+import { Dimensions, ScrollView, View } from "react-native";
+import { Image } from "expo-image";
 
 const { width } = Dimensions.get("window");
 
@@ -34,7 +35,8 @@ export function ImageGallery({ images }: ImageGalleryProps) {
             key={index}
             source={{ uri: image }}
             style={{ width, height: 320 }}
-            resizeMode="cover"
+            contentFit="cover"
+            transition={200}
           />
         ))}
       </ScrollView>

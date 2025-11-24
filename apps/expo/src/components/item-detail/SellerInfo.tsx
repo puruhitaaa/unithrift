@@ -1,4 +1,5 @@
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
 
 export interface SellerInfoProps {
   seller: {
@@ -18,7 +19,9 @@ export function SellerInfo({ seller }: SellerInfoProps) {
       <View className="flex-row items-center">
         <Image
           source={{ uri: seller.avatar }}
-          className="h-16 w-16 rounded-full"
+          style={{ width: 64, height: 64, borderRadius: 32 }}
+          contentFit="cover"
+          transition={200}
         />
 
         <View className="ml-4 flex-1">

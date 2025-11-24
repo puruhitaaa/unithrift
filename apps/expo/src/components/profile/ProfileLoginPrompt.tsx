@@ -1,4 +1,5 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { Chrome } from "lucide-react-native";
 
 interface ProfileLoginPromptProps {
@@ -24,8 +25,14 @@ export function ProfileLoginPrompt({ onGoogleLogin }: ProfileLoginPromptProps) {
           source={{
             uri: "https://rebrand.ly/s8x2f2y",
           }}
-          className="mb-4 h-32 w-48 rounded-xl"
-          resizeMode="cover"
+          style={{
+            width: 192,
+            height: 128,
+            borderRadius: 12,
+            marginBottom: 16,
+          }}
+          contentFit="cover"
+          transition={200}
         />
       </View>
 
