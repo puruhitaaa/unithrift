@@ -6,4 +6,4 @@
 
 @import "@unithrift/tailwind-config/theme";
 
-@source "./**/*.{tsx}";
+@source "./**/*.{ts, tsx}";

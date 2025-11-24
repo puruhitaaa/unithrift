@@ -12,7 +12,8 @@ import { BottomNav } from "~/components/BottomNav";
 export default function RootLayout() {
   const pathname = usePathname();
 
-  const shouldShowBottomNav = !pathname.startsWith("/item/");
+  const shouldShowBottomNav =
+    !pathname.startsWith("/item/") && pathname !== "/listings";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -24,7 +25,6 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="search" />
         <Stack.Screen name="sell" />
-        <Stack.Screen name="favorites" />
         <Stack.Screen name="profile" />
       </Stack>
       {shouldShowBottomNav && <BottomNav />}

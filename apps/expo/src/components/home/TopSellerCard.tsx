@@ -11,7 +11,7 @@ interface TopSellerCardProps {
 
 export function TopSellerCard({ item }: TopSellerCardProps) {
   const router = useRouter();
-  const imageUrl = item.media[0]?.url ?? "https://rebrand.ly/opp6kzm";
+  const imageUrl = item.media[0]?.url ?? "https://rebrand.ly/s8x2f2y";
 
   const handlePress = () => {
     router.push({

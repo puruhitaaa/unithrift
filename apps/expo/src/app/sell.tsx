@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { PlusCircle } from "lucide-react-native";
 
-import { Header } from "../components/ui/Header";
 import { CATEGORIES } from "../data/mock";
 
 export default function SellScreen() {
@@ -10,7 +9,6 @@ export default function SellScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <Header />
       <View className="flex-1 p-4">
         <View className="mt-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <Text className="mb-2 text-center text-2xl font-bold text-gray-900">

@@ -3,16 +3,16 @@ import { useRouter } from "expo-router";
 
 import type { RouterOutputs } from "~/utils/api";
 
-type FreshFindItem = RouterOutputs["listing"]["getFreshFinds"]["items"][number];
+type ListingItem = RouterOutputs["listing"]["list"]["items"][number];
 
-interface FreshFindCardProps {
-  item: FreshFindItem;
+interface ListingCardProps {
+  item: ListingItem;
 }
 
-export function FreshFindCard({ item }: FreshFindCardProps) {
+export function ListingCard({ item }: ListingCardProps) {
   const router = useRouter();
   const imageUrl = item.media[0]?.url ?? "https://rebrand.ly/s8x2f2y";
-  const sellerAvatar = item.seller.image ?? "https://rebrand.ly/s8x2f2y"; // Fallback avatar
+  const sellerAvatar = item.seller.image ?? "https://rebrand.ly/s8x2f2y";
 
   const handlePress = () => {
     router.push({
@@ -22,12 +22,8 @@ export function FreshFindCard({ item }: FreshFindCardProps) {
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={handlePress}
-      className="basis-[48%]"
-    >
-      <View className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+    <View className="basis-[48%] overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+      <TouchableOpacity activeOpacity={0.7} onPress={handlePress}>
         <View className="relative">
           <Image
             source={{ uri: imageUrl }}
@@ -65,11 +61,11 @@ export function FreshFindCard({ item }: FreshFindCardProps) {
               className="ml-2 truncate text-xs text-gray-500"
               numberOfLines={1}
             >
-              {item.seller.name}
+              {item.university.name}
             </Text>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }

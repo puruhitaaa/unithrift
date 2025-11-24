@@ -7,7 +7,7 @@ interface ImageGalleryProps {
   images?: string[];
 }
 
-const DEFAULT_REBRAND_IMAGE = "https://rebrand.ly/opp6kzm"; // contains 'rebrand'
+const DEFAULT_REBRAND_IMAGE = "https://rebrand.ly/s8x2f2y"; // contains 'rebrand'
 
 export function ImageGallery({ images }: ImageGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

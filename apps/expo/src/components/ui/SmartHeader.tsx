@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -8,58 +8,126 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ChevronDown, Filter, MapPin, Search, X } from "lucide-react-native";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ChevronDown,
+  ChevronLeft,
+  Filter,
+  MapPin,
+  Search,
+  X,
+} from "lucide-react-native";
 
-import type { RouterOutputs } from "~/utils/api";
+import { trpc } from "~/utils/api";
 import { CATEGORIES } from "../../data/mock";
 
-type University = RouterOutputs["university"]["list"]["items"][number];
-
-interface HeaderProps {
+interface SmartHeaderProps {
   showSearch?: boolean;
-  searchQuery?: string;
-  setSearchQuery?: (query: string) => void;
-  selectedCategory?: string;
-  setSelectedCategory?: (id: string | undefined) => void;
-  universities?: University[];
-  selectedUniversityId?: string;
-  setSelectedUniversityId?: (id: string) => void;
+  showCategories?: boolean;
+  showBackButton?: boolean;
+  onBack?: () => void;
+  onSearchChange?: (query: string) => void;
+  onCategoryChange?: (categoryId: string | undefined) => void;
+  onUniversityChange?: (universityId: string | undefined) => void;
 }
 
-export function Header({
+export function SmartHeader({
   showSearch = false,
-  searchQuery,
-  setSearchQuery,
-  selectedCategory,
-  setSelectedCategory,
-  universities = [],
-  selectedUniversityId,
-  setSelectedUniversityId,
-}: HeaderProps) {
+  showCategories = false,
+  showBackButton = false,
+  onBack,
+  onSearchChange,
+  onCategoryChange,
+  onUniversityChange,
+}: SmartHeaderProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined,
+  );
+  const [selectedUniversityId, setSelectedUniversityId] = useState<
+    string | undefined
+  >();
   const [isUniModalVisible, setIsUniModalVisible] = useState(false);
 
-  const selectedUniversity = universities.find(
+  // Fetch universities internally
+  const { data: universities } = useQuery(
+    trpc.university.list.queryOptions({}),
+  );
+
+  const selectedUniversity = universities?.items.find(
     (u) => u.id === selectedUniversityId,
   );
+
+  // Notify parent of search changes with debounce
+  useEffect(() => {
+    if (onSearchChange) {
+      const timer = setTimeout(() => {
+        onSearchChange(searchQuery);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, onSearchChange]);
+
+  // Notify parent of category changes
+  useEffect(() => {
+    if (onCategoryChange) {
+      onCategoryChange(selectedCategory);
+    }
+  }, [selectedCategory, onCategoryChange]);
+
+  // Notify parent of university changes
+  useEffect(() => {
+    if (onUniversityChange) {
+      onUniversityChange(selectedUniversityId);
+    }
+  }, [selectedUniversityId, onUniversityChange]);
 
   return (
     <View className="bg-white px-4 pt-12 pb-4 shadow-sm">
       <View className="mb-4 flex-row items-center justify-between">
-        <View>
-          <Text className="text-2xl font-bold text-gray-900">Unithrift</Text>
-          <View className="mt-1 flex-row items-center">
-            <MapPin size={16} color="#8B0A1A" />
+        {showBackButton ? (
+          <View className="flex-1 flex-row items-center gap-3">
             <TouchableOpacity
-              className="ml-1 flex-row items-center"
-              onPress={() => setIsUniModalVisible(true)}
+              onPress={onBack}
+              className="rounded-full bg-gray-100 p-2"
             >
-              <Text className="mr-1 text-gray-600">
-                {selectedUniversity?.name ?? "Select University"}
-              </Text>
-              <ChevronDown size={16} color="#666666" />
+              <ChevronLeft size={24} color="#333" />
             </TouchableOpacity>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-gray-900">
+                Unithrift
+              </Text>
+              <View className="mt-1 flex-row items-center">
+                <MapPin size={16} color="#8B0A1A" />
+                <TouchableOpacity
+                  className="ml-1 flex-row items-center"
+                  onPress={() => setIsUniModalVisible(true)}
+                >
+                  <Text className="mr-1 text-gray-600">
+                    {selectedUniversity?.name ?? "All Universities"}
+                  </Text>
+                  <ChevronDown size={16} color="#666666" />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        </View>
+        ) : (
+          <View>
+            <Text className="text-2xl font-bold text-gray-900">Unithrift</Text>
+            <View className="mt-1 flex-row items-center">
+              <MapPin size={16} color="#8B0A1A" />
+              <TouchableOpacity
+                className="ml-1 flex-row items-center"
+                onPress={() => setIsUniModalVisible(true)}
+              >
+                <Text className="mr-1 text-gray-600">
+                  {selectedUniversity?.name ?? "All Universities"}
+                </Text>
+                <ChevronDown size={16} color="#666666" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Search Bar - Only show if requested */}
@@ -69,6 +137,7 @@ export function Header({
           <TextInput
             className="mx-2 flex-1 text-gray-800"
             placeholder="Search for items..."
+            placeholderTextColor="#666666"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -79,7 +148,7 @@ export function Header({
       )}
 
       {/* Categories - Only show if requested */}
-      {showSearch && setSelectedCategory && (
+      {showCategories && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -146,7 +215,7 @@ export function Header({
             <FlatList
               data={[
                 { id: "all", name: "All Universities", abbr: "All" },
-                ...universities,
+                ...(universities?.items ?? []),
               ]}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
@@ -159,9 +228,9 @@ export function Header({
                   }`}
                   onPress={() => {
                     if (item.id === "all") {
-                      setSelectedUniversityId?.("");
+                      setSelectedUniversityId(undefined);
                     } else {
-                      setSelectedUniversityId?.(item.id);
+                      setSelectedUniversityId(item.id);
                     }
                     setIsUniModalVisible(false);
                   }}

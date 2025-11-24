@@ -9,14 +9,11 @@ import {
   ShoppingCart,
 } from "lucide-react-native";
 
-import { Header } from "../components/ui/Header";
-
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <View className="flex-1 bg-gray-50">
-      <Header />
       <View className="flex-1 p-4">
         <View className="mt-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <Text className="mb-2 text-center text-2xl font-bold text-gray-900">

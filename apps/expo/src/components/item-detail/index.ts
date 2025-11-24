@@ -3,3 +3,4 @@ export { ItemInfo } from "./ItemInfo";
 export { SellerInfo } from "./SellerInfo";
 export { ContactButton } from "./ContactButton";
 export { ItemDetailHeader } from "./ItemDetailHeader";
+export { ItemDetailSkeleton } from "./ItemDetailSkeleton";

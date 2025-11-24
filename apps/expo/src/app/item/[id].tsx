@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, Text } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import {
   ContactButton,
   ImageGallery,
   ItemDetailHeader,
+  ItemDetailSkeleton,
   ItemInfo,
   SellerInfo,
 } from "~/components/item-detail";
@@ -52,10 +53,7 @@ export default function ItemDetailScreen() {
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />
-        <SafeAreaView className="flex-1 items-center justify-center bg-gray-50">
-          <ActivityIndicator size="large" color="#8B0A1A" />
-          <Text className="mt-4 text-gray-600">Loading item details...</Text>
-        </SafeAreaView>
+        <ItemDetailSkeleton />
       </>
     );
   }
@@ -85,7 +83,7 @@ export default function ItemDetailScreen() {
 
       <SafeAreaView className="flex-1 bg-gray-50">
         <ScrollView showsVerticalScrollIndicator={false}>
-          <ItemDetailHeader onBack={() => router.back()} />
+          <ItemDetailHeader onBack={() => void router.back()} />
           <ImageGallery images={images} />
 
           <ItemInfo
