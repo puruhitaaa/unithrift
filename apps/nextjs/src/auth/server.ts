@@ -8,16 +8,18 @@ import { initAuth } from "@unithrift/auth";
 
 import { env } from "~/env";
 
+const normalize = (url: string) => url.replace(/^https?:\/\//, ""); // strips protocol if it exists
+
 const baseUrl =
   env.VERCEL_ENV === "production"
-    ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`
+    ? `https://${normalize(env.VERCEL_URL ?? "turbo.t3.gg")}`
     : env.VERCEL_ENV === "preview"
-      ? `https://${env.VERCEL_URL}`
+      ? `https://${normalize(env.VERCEL_URL ?? "turbo.t3.gg")}`
       : "http://localhost:3000";
 
 export const auth = initAuth({
   baseUrl,
-  productionUrl: `https://${env.VERCEL_PROJECT_PRODUCTION_URL ?? "turbo.t3.gg"}`,
+  productionUrl: `https://${normalize(env.VERCEL_URL ?? "turbo.t3.gg")}`,
   secret: env.AUTH_SECRET,
   googleClientId: env.AUTH_GOOGLE_ID,
   googleClientSecret: env.AUTH_GOOGLE_SECRET,
