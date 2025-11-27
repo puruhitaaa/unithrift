@@ -1,4 +1,4 @@
-import Constants from "expo-constants";
+// import Constants from "expo-constants"; // Only needed for localhost development
 
 /**
  * Extend this function when going to production by
@@ -6,21 +6,22 @@ import Constants from "expo-constants";
  */
 export const getBaseUrl = () => {
   /**
-   * Gets the IP address of your host-machine. If it cannot automatically find it,
-   * you'll have to manually set it. NOTE: Port 3000 should work for most but confirm
-   * you don't have anything else running on it, or you'd have to change it.
+   * For OAuth to work properly, we need to use the production URL.
    *
-   * **NOTE**: This is only for development. In production, you'll want to set the
-   * baseUrl to your production API URL.
+   * If you want to test against localhost during development:
+   * 1. Uncomment the localhost logic below
+   * 2. Make sure your backend is running on localhost:3000
+   * 3. Update Google OAuth console to include http://localhost:3000/api/auth/callback/google
    */
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  const localhost = debuggerHost?.split(":")[0];
 
-  if (!localhost) {
-    // return "https://turbo.t3.gg";
-    throw new Error(
-      "Failed to get localhost. Please point to your production server.",
-    );
-  }
-  return `http://${localhost}:3000`;
+  // Use production URL for OAuth flows
+  return "https://unithrift-nextjs.vercel.app";
+
+  // Uncomment for local development (requires backend running on localhost:3000)
+  // const debuggerHost = Constants.expoConfig?.hostUri;
+  // const localhost = debuggerHost?.split(":")[0];
+  // if (!localhost) {
+  //   throw new Error("Failed to get localhost. Please point to your production server.");
+  // }
+  // return `http://${localhost}:3000`;
 };

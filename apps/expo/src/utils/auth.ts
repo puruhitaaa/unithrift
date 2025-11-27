@@ -8,7 +8,7 @@ export const authClient = createAuthClient({
   baseURL: getBaseUrl(),
   plugins: [
     expoClient({
-      scheme: "expo",
+      scheme: "unithrift", // Must match app.config.ts scheme and server trustedOrigins
       storagePrefix: "expo",
       storage: SecureStore,
     }),

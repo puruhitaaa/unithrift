@@ -21,7 +21,10 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
-      await authClient.signIn.social({ provider: "google" });
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/login", // Will be converted to unithrift://login by expo plugin
+      });
 
       // After sign-in, redirect to provided url or root
       if (redirectTo) {

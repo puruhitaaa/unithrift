@@ -9,7 +9,10 @@ export default function ProfileScreen() {
 
   const handleGoogleLogin = async () => {
     try {
-      await authClient.signIn.social({ provider: "google" });
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/profile", // Will be converted to unithrift://profile by expo plugin
+      });
     } catch (err) {
       console.error("Login failed", err);
     }

@@ -99,6 +99,67 @@ export const listingRouter = createTRPCRouter({
       return { items, total, nextCursor };
     }),
 
+  createPublic: publicProcedure
+    .input(
+      z.object({
+        title: z.string().min(1).max(256),
+        description: z.string().min(1),
+        price: z.number().min(0),
+        category: z.enum(listingCategoryEnum.enumValues),
+        condition: z.enum(listingConditionEnum.enumValues),
+        universityId: z.string(),
+        sellerId: z.string().optional(), // Temporary: make optional for testing
+        media: z
+          .array(
+            z.object({
+              url: z.url(),
+              publicId: z.string().optional(),
+              type: z.enum(listingMediaTypeEnum.enumValues),
+              order: z.number().default(0),
+            }),
+          )
+          .optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.transaction(async (tx) => {
+        // Use provided sellerId or fallback to a test user
+        const sellerId = input.sellerId ?? "test-seller-id";
+
+        const [newListing] = await tx
+          .insert(listing)
+          .values({
+            sellerId,
+            universityId: input.universityId,
+            title: input.title,
+            description: input.description,
+            price: input.price,
+            category: input.category,
+            condition: input.condition,
+            status: "ACTIVE",
+          })
+          .returning();
+
+        if (!newListing) {
+          throw new Error("Failed to create listing");
+        }
+
+        if (input.media && input.media.length > 0) {
+          await tx.insert(listingMedia).values(
+            input.media.map((m) => ({
+              listingId: newListing.id,
+              url: m.url,
+              publicId: m.publicId,
+              type: m.type,
+              order: m.order,
+            })),
+          );
+        }
+
+        return newListing;
+      });
+    }),
+
   create: protectedProcedure
     .input(
       z.object({

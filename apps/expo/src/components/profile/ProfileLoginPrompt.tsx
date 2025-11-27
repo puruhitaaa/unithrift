@@ -22,9 +22,7 @@ export function ProfileLoginPrompt({ onGoogleLogin }: ProfileLoginPromptProps) {
       {/* Illustration */}
       <View className="mb-6 w-full items-center">
         <Image
-          source={{
-            uri: "https://rebrand.ly/s8x2f2y",
-          }}
+          source="https://rebrand.ly/s8x2f2y"
           style={{
             width: 192,
             height: 128,
