@@ -45,7 +45,7 @@ export function initAuth<
         redirectURI: `${options.baseUrl}/api/auth/callback/google`,
       },
     },
-    trustedOrigins: ["expo://", "unithrift://"],
+    trustedOrigins: ["expo://", "unithrift://", "exp://"],
     onAPIError: {
       onError(error, ctx) {
         console.error("BETTER AUTH API ERROR", error, ctx);

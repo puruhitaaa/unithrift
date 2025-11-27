@@ -12,14 +12,14 @@ const normalize = (url: string) => url.replace(/^https?:\/\//, ""); // strips pr
 
 const baseUrl =
   env.VERCEL_ENV === "production"
-    ? `https://${normalize(env.VERCEL_URL ?? "turbo.t3.gg")}`
+    ? `https://${normalize(env.NEXT_PUBLIC_PRODUCTION_URL ?? "turbo.t3.gg")}`
     : env.VERCEL_ENV === "preview"
-      ? `https://${normalize(env.VERCEL_URL ?? "turbo.t3.gg")}`
+      ? `https://${normalize(env.NEXT_PUBLIC_PRODUCTION_URL ?? "turbo.t3.gg")}`
       : "http://localhost:3000";
 
 export const auth = initAuth({
   baseUrl,
-  productionUrl: `https://${normalize(env.VERCEL_URL ?? "turbo.t3.gg")}`,
+  productionUrl: `https://${normalize(env.NEXT_PUBLIC_PRODUCTION_URL ?? "turbo.t3.gg")}`,
   secret: env.AUTH_SECRET,
   googleClientId: env.AUTH_GOOGLE_ID,
   googleClientSecret: env.AUTH_GOOGLE_SECRET,
