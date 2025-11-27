@@ -1,76 +1,74 @@
 import { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import {
-  Bookmark,
-  Filter,
-  Heart,
-  Home,
-  Search,
-  ShoppingCart,
-} from "lucide-react-native";
+import { useInfiniteQuery } from "@tanstack/react-query";
+
+import type { RouterInputs, RouterOutputs } from "~/utils/api";
+import { CategoryFilter } from "~/components/search/CategoryFilter";
+import { SearchGrid } from "~/components/search/SearchGrid";
+import { SearchHeader } from "~/components/search/SearchHeader";
+import { trpc } from "~/utils/api";
 
 export default function SearchScreen() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<
+    string | undefined
+  >();
+
+  const categoryInput =
+    selectedCategory && selectedCategory !== "all"
+      ? (selectedCategory.toUpperCase() as RouterInputs["listing"]["list"]["category"])
+      : undefined;
+
+  // Fetch listings with infinite scroll
+  const {
+    data: listingsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery(
+    trpc.listing.list.infiniteQueryOptions(
+      {
+        limit: 30, // More items for grid view
+        search: debouncedSearchQuery || undefined,
+        category: categoryInput,
+      },
+      {
+        getNextPageParam: (lastPage: RouterOutputs["listing"]["list"]) =>
+          lastPage.nextCursor,
+      },
+    ),
+  );
+
+  const flatListings = listingsData?.pages.flatMap((page) => page.items) ?? [];
+
+  const handleEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  };
 
   return (
     <>
-      <StatusBar />
-      <View className="flex-1 bg-gray-50">
-        <View className="flex-1 p-4">
-          <View className="mt-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <Text className="mb-2 text-center text-2xl font-bold text-gray-900">
-              Find What You Need
-            </Text>
-            <Text className="mb-6 text-center text-gray-600">
-              Search through thousands of preloved items
-            </Text>
+      <StatusBar style="dark" />
+      <View className="flex-1 bg-white">
+        {/* Search Header */}
+        <SearchHeader onSearchChange={setDebouncedSearchQuery} />
 
-            <View className="mb-6 flex-row items-center rounded-xl bg-gray-100 px-4 py-3">
-              <Search size={20} color="#666666" />
-              <TextInput
-                className="mx-2 flex-1 text-gray-800"
-                placeholder="Search for items..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              <TouchableOpacity>
-                <Filter size={20} color="#666666" />
-              </TouchableOpacity>
-            </View>
+        {/* Category Filter */}
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
 
-            <View className="mb-6 flex-row justify-between">
-              <View className="items-center">
-                <View className="mb-2 rounded-full bg-[#8B0A1A] p-3">
-                  <ShoppingCart size={24} color="white" />
-                </View>
-                <Text className="text-gray-700">Electronics</Text>
-              </View>
-              <View className="items-center">
-                <View className="mb-2 rounded-full bg-[#8B0A1A] p-3">
-                  <Bookmark size={24} color="white" />
-                </View>
-                <Text className="text-gray-700">Books</Text>
-              </View>
-              <View className="items-center">
-                <View className="mb-2 rounded-full bg-[#8B0A1A] p-3">
-                  <Heart size={24} color="white" />
-                </View>
-                <Text className="text-gray-700">Clothing</Text>
-              </View>
-              <View className="items-center">
-                <View className="mb-2 rounded-full bg-[#8B0A1A] p-3">
-                  <Home size={24} color="white" />
-                </View>
-                <Text className="text-gray-700">Furniture</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity className="items-center rounded-lg bg-[#8B0A1A] py-3">
-              <Text className="font-medium text-white">Search Items</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Grid View */}
+        <SearchGrid
+          listings={flatListings}
+          isLoading={isLoading}
+          isFetchingMore={isFetchingNextPage}
+          onEndReached={handleEndReached}
+        />
       </View>
     </>
   );
