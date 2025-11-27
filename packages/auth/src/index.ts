@@ -27,6 +27,10 @@ export function initAuth<
           type: "string",
           input: false,
         },
+        universityId: {
+          type: "string",
+          // input: false,
+        },
       },
     },
     baseURL: options.baseUrl,
