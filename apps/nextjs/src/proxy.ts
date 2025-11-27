@@ -17,5 +17,20 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard", "/universities", "/listings", "/transactions"], // Specify the routes the middleware applies to
+  // Protect all routes except:
+  // - /api/* (API routes including auth callbacks)
+  // - /login (login page)
+  // - /_next/* (Next.js internals)
+  // - /favicon.ico, /robots.txt, etc. (static files)
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - login (login page)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|login).*)",
+  ],
 };
