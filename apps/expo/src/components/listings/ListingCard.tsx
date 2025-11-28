@@ -65,7 +65,7 @@ export function ListingCard({ item }: ListingCardProps) {
               className="ml-2 truncate text-xs text-gray-500"
               numberOfLines={1}
             >
-              {item.university.name}
+              {item.seller.name}
             </Text>
           </View>
         </View>

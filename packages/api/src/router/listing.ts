@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
 import { and, asc, desc, eq, gte, inArray, lte, sql } from "@unithrift/db";
@@ -25,6 +26,7 @@ export const listingRouter = createTRPCRouter({
         cursor: z.number().min(0).default(0), // Use cursor for infinite scroll (offset)
         offset: z.number().min(0).optional(), // Keep for backward compatibility
         universityId: z.string().optional(),
+        sellerId: z.string().optional(),
         category: z.enum(listingCategoryEnum.enumValues).optional(),
         condition: z.enum(listingConditionEnum.enumValues).optional(),
         minPrice: z.number().optional(),
@@ -40,6 +42,7 @@ export const listingRouter = createTRPCRouter({
         cursor,
         offset,
         universityId,
+        sellerId,
         category,
         condition,
         minPrice,
@@ -53,6 +56,7 @@ export const listingRouter = createTRPCRouter({
 
       const where = and(
         universityId ? eq(listing.universityId, universityId) : undefined,
+        sellerId ? eq(listing.sellerId, sellerId) : undefined,
         category ? eq(listing.category, category) : undefined,
         condition ? eq(listing.condition, condition) : undefined,
         minPrice ? gte(listing.price, minPrice) : undefined,
@@ -168,7 +172,6 @@ export const listingRouter = createTRPCRouter({
         price: z.number().min(0),
         category: z.enum(listingCategoryEnum.enumValues),
         condition: z.enum(listingConditionEnum.enumValues),
-        universityId: z.string(),
         media: z
           .array(
             z.object({
@@ -182,12 +185,22 @@ export const listingRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const { user } = ctx.session;
+      const universityId = user.universityId;
+
+      if (!universityId && user.role !== "admin") {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User is not associated with a university",
+        });
+      }
+
       return ctx.db.transaction(async (tx) => {
         const [newListing] = await tx
           .insert(listing)
           .values({
-            sellerId: ctx.session.user.id,
-            universityId: input.universityId,
+            sellerId: user.id,
+            universityId: universityId ?? null,
             title: input.title,
             description: input.description,
             price: input.price,
@@ -198,7 +211,10 @@ export const listingRouter = createTRPCRouter({
           .returning();
 
         if (!newListing) {
-          throw new Error("Failed to create listing");
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create listing",
+          });
         }
 
         if (input.media && input.media.length > 0) {
@@ -260,7 +276,10 @@ export const listingRouter = createTRPCRouter({
         .returning();
 
       if (!deletedListing) {
-        throw new Error("Listing not found or failed to delete");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Listing not found or failed to delete",
+        });
       }
 
       return deletedListing;
@@ -279,7 +298,10 @@ export const listingRouter = createTRPCRouter({
       });
 
       if (!item) {
-        throw new Error("Listing not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Listing not found",
+        });
       }
 
       return item;
@@ -300,7 +322,10 @@ export const listingRouter = createTRPCRouter({
       });
 
       if (!item) {
-        throw new Error("Listing not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Listing not found",
+        });
       }
 
       return item;

@@ -29,7 +29,8 @@ export function initAuth<
         },
         universityId: {
           type: "string",
-          // input: false,
+          required: false,
+          defaultValue: null,
         },
       },
     },

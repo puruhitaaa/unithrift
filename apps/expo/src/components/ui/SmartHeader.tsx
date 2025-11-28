@@ -29,6 +29,8 @@ interface SmartHeaderProps {
   onSearchChange?: (query: string) => void;
   onCategoryChange?: (categoryId: string | undefined) => void;
   onUniversityChange?: (universityId: string | undefined) => void;
+  title?: string;
+  showUniversitySelector?: boolean;
 }
 
 export function SmartHeader({
@@ -39,6 +41,8 @@ export function SmartHeader({
   onSearchChange,
   onCategoryChange,
   onUniversityChange,
+  title = "Unithrift",
+  showUniversitySelector = true,
 }: SmartHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
@@ -94,9 +98,27 @@ export function SmartHeader({
               <ChevronLeft size={24} color="#333" />
             </TouchableOpacity>
             <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900">
-                Unithrift
-              </Text>
+              <Text className="text-2xl font-bold text-gray-900">{title}</Text>
+              {showUniversitySelector && (
+                <View className="mt-1 flex-row items-center">
+                  <MapPin size={16} color="#8B0A1A" />
+                  <TouchableOpacity
+                    className="ml-1 flex-row items-center"
+                    onPress={() => setIsUniModalVisible(true)}
+                  >
+                    <Text className="mr-1 text-gray-600">
+                      {selectedUniversity?.name ?? "All Universities"}
+                    </Text>
+                    <ChevronDown size={16} color="#666666" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+        ) : (
+          <View>
+            <Text className="text-2xl font-bold text-gray-900">{title}</Text>
+            {showUniversitySelector && (
               <View className="mt-1 flex-row items-center">
                 <MapPin size={16} color="#8B0A1A" />
                 <TouchableOpacity
@@ -109,23 +131,7 @@ export function SmartHeader({
                   <ChevronDown size={16} color="#666666" />
                 </TouchableOpacity>
               </View>
-            </View>
-          </View>
-        ) : (
-          <View>
-            <Text className="text-2xl font-bold text-gray-900">Unithrift</Text>
-            <View className="mt-1 flex-row items-center">
-              <MapPin size={16} color="#8B0A1A" />
-              <TouchableOpacity
-                className="ml-1 flex-row items-center"
-                onPress={() => setIsUniModalVisible(true)}
-              >
-                <Text className="mr-1 text-gray-600">
-                  {selectedUniversity?.name ?? "All Universities"}
-                </Text>
-                <ChevronDown size={16} color="#666666" />
-              </TouchableOpacity>
-            </View>
+            )}
           </View>
         )}
       </View>

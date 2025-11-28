@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import type { RouterInputs, RouterOutputs } from "../utils/api";
@@ -10,6 +10,7 @@ import { SmartHeader } from "../components/ui/SmartHeader";
 import { trpc } from "../utils/api";
 
 export default function ListingsScreen() {
+  const { sellerId } = useLocalSearchParams<{ sellerId: string }>();
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     string | undefined
@@ -37,6 +38,7 @@ export default function ListingsScreen() {
         search: debouncedSearchQuery || undefined,
         category: categoryInput,
         universityId: selectedUniversityId,
+        sellerId,
       },
       {
         getNextPageParam: (lastPage: RouterOutputs["listing"]["list"]) =>
@@ -45,7 +47,7 @@ export default function ListingsScreen() {
     ),
   );
 
-  const flatListings = listingsData?.pages.flatMap((page) => page.items) ?? [];
+  const flatListings = listingsData?.pages.flatMap((page) => page.items);
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -57,6 +59,8 @@ export default function ListingsScreen() {
         onUniversityChange={setSelectedUniversityId}
         showBackButton={true}
         onBack={() => void router.back()}
+        title={sellerId ? "My Listings" : "Unithrift"}
+        showUniversitySelector={!sellerId}
       />
 
       {/* Listings Grid */}

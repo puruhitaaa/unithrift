@@ -18,7 +18,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import type { RouterInputs } from "../utils/api";
 import { authClient } from "~/utils/auth";
-import { uploadToCloudinary } from "~/utils/cloudinary";
+import { useCloudinaryUpload } from "~/utils/cloudinary";
 import {
   SellCategoryPicker,
   SellConditionPicker,
@@ -36,12 +36,12 @@ const CATEGORY_MAP: Record<
   string,
   RouterInputs["listing"]["create"]["category"]
 > = {
-  "1": "CLOTHING",
-  "2": "BOOKS",
-  "3": "ELECTRONICS",
-  "4": "FURNITURE",
-  "5": "STATIONERY",
-  "6": "OTHER",
+  clothing: "CLOTHING",
+  books: "BOOKS",
+  electronics: "ELECTRONICS",
+  furniture: "FURNITURE",
+  stationery: "STATIONERY",
+  other: "OTHER",
 };
 
 export default function SellScreen() {
@@ -60,7 +60,9 @@ export default function SellScreen() {
   );
 
   // Upload state
-  const [isUploading, setIsUploading] = useState(false);
+  const { upload, isPending: isUploadingSignature } = useCloudinaryUpload();
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const isUploading = isUploadingSignature || isUploadingMedia;
 
   // Validation errors
   const [errors, setErrors] = useState<{
@@ -73,12 +75,15 @@ export default function SellScreen() {
   const createListing = useMutation(
     trpc.listing.create.mutationOptions({
       onSuccess: (data) => {
-        setIsUploading(false);
+        setIsUploadingMedia(false);
         Alert.alert("Success!", "Your item has been listed successfully.", [
           {
             text: "View Listing",
             onPress: () => {
-              router.push(`/item-detail/${data.id}`);
+              router.push({
+                pathname: "/item/[id]",
+                params: { id: data.id },
+              });
             },
           },
           {
@@ -94,7 +99,7 @@ export default function SellScreen() {
         );
       },
       onError: (error) => {
-        setIsUploading(false);
+        setIsUploadingMedia(false);
         Alert.alert(
           "Error",
           error.message || "Failed to create listing. Please try again.",
@@ -199,7 +204,7 @@ export default function SellScreen() {
     }
 
     // Check if user has a university
-    if (!session.user.universityId) {
+    if (!session.user.universityId && session.user.role !== "admin") {
       Alert.alert(
         "University Required",
         "Please set your university in your profile before creating a listing.",
@@ -208,12 +213,12 @@ export default function SellScreen() {
     }
 
     try {
-      setIsUploading(true);
+      setIsUploadingMedia(true);
 
       // Upload all images to Cloudinary
       const uploadedMedia = await Promise.all(
         images.map(async (imageUri, index) => {
-          const uploaded = await uploadToCloudinary(imageUri, "image");
+          const uploaded = await upload(imageUri, "image");
           return {
             url: uploaded.secureUrl,
             publicId: uploaded.publicId,
@@ -239,11 +244,10 @@ export default function SellScreen() {
         price: priceInCents,
         category: categoryEnum,
         condition: selectedCondition,
-        universityId: session.user.universityId,
         media: uploadedMedia,
       });
     } catch (error) {
-      setIsUploading(false);
+      setIsUploadingMedia(false);
       console.error("Error creating listing:", error);
       Alert.alert(
         "Error",

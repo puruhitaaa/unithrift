@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
@@ -17,15 +18,19 @@ export const uploadRouter = createTRPCRouter({
       const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 
       if (!cloudinaryCloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
-        throw new Error("Cloudinary credentials not configured");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Cloudinary credentials not configured",
+        });
       }
 
       const timestamp = Math.round(new Date().getTime() / 1000);
 
       // Generate signature using crypto (compatible with Node.js and edge)
+      // Cloudinary uses SHA1 for upload signatures
       const crypto = await import("crypto");
       const signature = crypto
-        .createHash("sha256")
+        .createHash("sha1")
         .update(
           `folder=${input.folder}&timestamp=${timestamp}${cloudinaryApiSecret}`,
         )

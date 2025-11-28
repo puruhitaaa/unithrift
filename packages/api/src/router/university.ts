@@ -1,9 +1,14 @@
 import { z } from "zod";
 
 import { asc, desc, eq, like, or, sql } from "@unithrift/db";
-import { university } from "@unithrift/db/schema";
+import { university, user } from "@unithrift/db/schema";
 
-import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "../trpc";
 
 export const universityRouter = createTRPCRouter({
   list: publicProcedure
@@ -61,10 +66,6 @@ export const universityRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Generate a random ID since the schema defines it as text but doesn't have defaultRandom()
-      // In a real app we might use a library like 'nanoid' or 'uuid', but here we can use crypto.randomUUID()
-      // or let the database handle it if we change the schema.
-      // For now, we'll assume we need to provide it.
       const id = crypto.randomUUID();
 
       const [newUniversity] = await ctx.db
@@ -103,7 +104,7 @@ export const universityRouter = createTRPCRouter({
           abbr: input.abbr,
           domain: input.domain,
           logo: input.logo,
-          updatedAt: new Date(), // Manually update timestamp if needed, though onUpdateFn should handle it if using drizzle-orm's update
+          updatedAt: new Date(),
         })
         .where(eq(university.id, input.id))
         .returning();
@@ -128,5 +129,32 @@ export const universityRouter = createTRPCRouter({
       }
 
       return deletedUniversity;
+    }),
+
+  // Assign university to user (one-time only, cannot be changed)
+  assignUniversity: protectedProcedure
+    .input(z.object({ universityId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user already has a university assigned
+      if (ctx.session.user.universityId) {
+        throw new Error(
+          "You are already assigned to a university. Contact support to make changes.",
+        );
+      }
+
+      // Update user with university
+      const [updatedUser] = await ctx.db
+        .update(user)
+        .set({
+          universityId: input.universityId,
+        })
+        .where(eq(user.id, ctx.session.user.id))
+        .returning();
+
+      if (!updatedUser) {
+        throw new Error("Failed to assign university");
+      }
+
+      return updatedUser;
     }),
 });

@@ -51,7 +51,6 @@ export const listing = pgTable("listing", (t) => ({
     .references(() => user.id, { onDelete: "cascade" }),
   universityId: t
     .text()
-    .notNull()
     .references(() => university.id, { onDelete: "cascade" }),
   title: t.varchar({ length: 256 }).notNull(),
   description: t.text().notNull(),
