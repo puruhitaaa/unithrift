@@ -141,7 +141,7 @@ export const paymentRouter = createTRPCRouter({
 
   // Check payment status by transaction ID
   checkPaymentStatus: protectedProcedure
-    .input(z.object({ transactionId: z.string().uuid() }))
+    .input(z.object({ transactionId: z.uuid() }))
     .query(async ({ ctx, input }) => {
       const paymentRecord = await ctx.db.query.payment.findFirst({
         where: eq(payment.transactionId, input.transactionId),

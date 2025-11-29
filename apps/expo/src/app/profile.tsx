@@ -11,6 +11,7 @@ import {
   Package,
   Settings,
   Shield,
+  ShoppingBag,
 } from "lucide-react-native";
 
 import {
@@ -188,6 +189,11 @@ export default function ProfileScreen() {
                     pathname: "/listings",
                     params: { sellerId: session.user.id },
                   }),
+              },
+              {
+                icon: ShoppingBag,
+                label: "My Transactions",
+                onPress: () => router.push("/transactions"),
               },
               // {
               //   icon: MessageCircle,

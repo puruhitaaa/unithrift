@@ -1,7 +1,7 @@
-import { ScrollView, Text } from "react-native";
+import { Alert, ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
 import {
@@ -26,14 +26,39 @@ export default function ItemDetailScreen() {
     isLoading,
     error,
   } = useQuery(
-    trpc.listing.byId.queryOptions({
-      id,
-    }),
+    trpc.listing.byId.queryOptions(
+      {
+        id,
+      },
+      { enabled: !!id },
+    ),
   );
 
   const { data: session } = authClient.useSession();
 
-  const handlePurchase = () => {
+  // const initPayment = trpc.payment.initiatePayment.useMutation();
+  const initPayment = useMutation(
+    trpc.payment.initiatePayment.mutationOptions({
+      onSuccess: (data) => {
+        router.push({
+          pathname: "/payment",
+          params: {
+            transactionId: data.transactionId,
+            snapToken: data.snapToken,
+            redirectUrl: data.redirectUrl,
+          },
+        });
+      },
+      onError: (error) => {
+        Alert.alert(
+          "Payment Error",
+          error.message || "Failed to initiate payment",
+        );
+      },
+    }),
+  );
+
+  const handlePurchase = async () => {
     // If the user is not authenticated, redirect them to the login screen
     // and preserve a redirectTo param so they can come back to the item page
     if (!session) {
@@ -45,8 +70,28 @@ export default function ItemDetailScreen() {
       return;
     }
 
-    // TODO: Implement checkout flow; for now, navigate to a checkout route
-    router.push({ pathname: "/checkout", params: { id: id } });
+    if (!id) return;
+
+    try {
+      // Initiate payment with Midtrans
+      await initPayment.mutateAsync({
+        listingId: id,
+      });
+
+      // router.push({
+      //   pathname: "/payment",
+      //   params: {
+      //     transactionId: paymentData.transactionId,
+      //     snapToken: paymentData.snapToken,
+      //     redirectUrl: paymentData.redirectUrl,
+      //   },
+      // });
+    } catch (error) {
+      // Handle errors (e.g., listing not available, user can't buy own item, etc.)
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to initiate payment";
+      Alert.alert("Payment Error", errorMessage);
+    }
   };
 
   if (isLoading) {

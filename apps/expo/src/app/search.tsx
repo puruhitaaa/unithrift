@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -20,7 +20,6 @@ export default function SearchScreen() {
       ? (selectedCategory.toUpperCase() as RouterInputs["listing"]["list"]["category"])
       : undefined;
 
-  // Fetch listings with infinite scroll
   const {
     data: listingsData,
     fetchNextPage,
@@ -30,7 +29,7 @@ export default function SearchScreen() {
   } = useInfiniteQuery(
     trpc.listing.list.infiniteQueryOptions(
       {
-        limit: 30, // More items for grid view
+        limit: 30,
         search: debouncedSearchQuery || undefined,
         category: categoryInput,
       },
@@ -52,17 +51,14 @@ export default function SearchScreen() {
   return (
     <>
       <StatusBar style="dark" />
-      <View className="flex-1 bg-white">
-        {/* Search Header */}
+      <View style={styles.container}>
         <SearchHeader onSearchChange={setDebouncedSearchQuery} />
 
-        {/* Category Filter */}
         <CategoryFilter
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
         />
 
-        {/* Grid View */}
         <SearchGrid
           listings={flatListings}
           isLoading={isLoading}
@@ -73,3 +69,10 @@ export default function SearchScreen() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+});

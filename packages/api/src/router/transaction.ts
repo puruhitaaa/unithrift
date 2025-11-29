@@ -188,32 +188,82 @@ export const transactionRouter = createTRPCRouter({
       return item;
     }),
 
-  listPurchases: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.query.transaction.findMany({
-      where: eq(transaction.buyerId, ctx.session.user.id),
-      with: {
-        listing: {
-          with: {
-            media: true,
-          },
-        },
-        payment: true,
-      },
-    });
-  }),
+  listPurchases: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(20),
+        cursor: z.uuid().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor } = input;
 
-  listSales: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.query.transaction.findMany({
-      where: eq(transaction.sellerId, ctx.session.user.id),
-      with: {
-        listing: {
-          with: {
-            media: true,
+      const items = await ctx.db.query.transaction.findMany({
+        where: and(
+          eq(transaction.buyerId, ctx.session.user.id),
+          cursor ? lte(transaction.createdAt, new Date(cursor)) : undefined,
+        ),
+        limit: limit + 1,
+        orderBy: [desc(transaction.createdAt)],
+        with: {
+          listing: {
+            with: {
+              media: true,
+            },
           },
+          payment: true,
         },
-        payment: true,
-        buyer: true,
-      },
-    });
-  }),
+      });
+
+      let nextCursor: string | undefined = undefined;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = nextItem?.createdAt.toISOString();
+      }
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
+
+  listSales: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(20),
+        cursor: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor } = input;
+
+      const items = await ctx.db.query.transaction.findMany({
+        where: and(
+          eq(transaction.sellerId, ctx.session.user.id),
+          cursor ? lte(transaction.createdAt, new Date(cursor)) : undefined,
+        ),
+        limit: limit + 1,
+        orderBy: [desc(transaction.createdAt)],
+        with: {
+          listing: {
+            with: {
+              media: true,
+            },
+          },
+          payment: true,
+          buyer: true,
+        },
+      });
+
+      let nextCursor: string | undefined = undefined;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = nextItem?.createdAt.toISOString();
+      }
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
 });
