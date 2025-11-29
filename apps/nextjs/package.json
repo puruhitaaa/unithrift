@@ -45,6 +45,7 @@
     "@unithrift/prettier-config": "workspace:*",
     "@unithrift/tailwind-config": "workspace:*",
     "@unithrift/tsconfig": "workspace:*",
+    "baseline-browser-mapping": "^2.8.32",
     "eslint": "catalog:",
     "jiti": "^2.5.1",
     "prettier": "catalog:",

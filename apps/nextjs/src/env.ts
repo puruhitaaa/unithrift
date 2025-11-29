@@ -21,7 +21,11 @@ export const env = createEnv({
     CLOUDINARY_API_KEY: z.string(),
     CLOUDINARY_API_SECRET: z.string(),
     MIDTRANS_SERVER_KEY: z.string(),
-    MIDTRANS_CLIENT_KEY: z.string(),
+    MIDTRANS_IS_PRODUCTION: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((val) => val === "true"),
   },
 
   /**
@@ -30,6 +34,7 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_PRODUCTION_URL: z.url(),
+    NEXT_PUBLIC_MIDTRANS_CLIENT_KEY: z.string(),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
   /**
@@ -37,6 +42,8 @@ export const env = createEnv({
    */
   experimental__runtimeEnv: {
     NEXT_PUBLIC_PRODUCTION_URL: process.env.NEXT_PUBLIC_PRODUCTION_URL,
+    NEXT_PUBLIC_MIDTRANS_CLIENT_KEY:
+      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY,
     NODE_ENV: process.env.NODE_ENV,
 
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
