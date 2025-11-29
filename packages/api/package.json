@@ -22,10 +22,12 @@
     "@unithrift/auth": "workspace:*",
     "@unithrift/db": "workspace:*",
     "@unithrift/validators": "workspace:*",
+    "midtrans-client": "^1.4.3",
     "superjson": "2.2.3",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/midtrans-client": "^1.4.0",
     "@unithrift/eslint-config": "workspace:*",
     "@unithrift/prettier-config": "workspace:*",
     "@unithrift/tsconfig": "workspace:*",

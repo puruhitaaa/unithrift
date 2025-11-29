@@ -92,7 +92,9 @@ export default function ItemDetailScreen() {
               price: itemData.price,
               condition: itemData.condition,
               category: itemData.category,
-              university: itemData.university.name,
+              university: itemData.university
+                ? itemData.university.name
+                : "Admin",
               description: itemData.description,
             }}
           />
@@ -103,7 +105,9 @@ export default function ItemDetailScreen() {
               avatar:
                 itemData.seller.image ??
                 "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=900&auto=format&fit=crop&q=60",
-              university: itemData.university.name,
+              university: itemData.university
+                ? itemData.university.name
+                : "Admin",
             }}
           />
 

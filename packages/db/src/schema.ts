@@ -116,6 +116,7 @@ export const payment = pgTable("payment", (t) => ({
     .references(() => transaction.id, { onDelete: "cascade" }),
   amount: t.integer().notNull(),
   status: paymentStatusEnum().default("PENDING").notNull(),
+  midtransOrderId: t.text(),
   midtransToken: t.text(),
   midtransRedirectUrl: t.text(),
   createdAt: t.timestamp().defaultNow().notNull(),
