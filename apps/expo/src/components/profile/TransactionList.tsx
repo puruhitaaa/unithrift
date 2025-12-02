@@ -1,7 +1,9 @@
+import { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,9 +11,10 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Package } from "lucide-react-native";
+import { Info, Package } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
+import { DirectPaymentModal } from "../DirectPaymentModal";
 
 type Transaction =
   RouterOutputs["transaction"]["listPurchases"]["items"][number];
@@ -50,6 +53,13 @@ export function TransactionList({
   isFetchingMore,
 }: TransactionListProps) {
   const router = useRouter();
+  const [selectedSeller, setSelectedSeller] = useState<{
+    name: string;
+    whatsapp?: string | null;
+    instagram?: string | null;
+    line?: string | null;
+    telegram?: string | null;
+  } | null>(null);
 
   const getStatusColors = (status: string) => {
     switch (status) {
@@ -102,6 +112,37 @@ export function TransactionList({
     const listing = transaction.listing;
     const firstImage = listing.media[0]?.url;
     const statusColors = getStatusColors(transaction.status);
+    const isDirect = transaction.paymentMethod === "DIRECT";
+    const isMidtrans = transaction.paymentMethod === "MIDTRANS";
+
+    const handleSellerInfo = () => {
+      const seller = transaction.seller;
+      if (seller) {
+        setSelectedSeller({
+          name: seller.name as string,
+          whatsapp: (seller.whatsapp as string | null | undefined) ?? null,
+          instagram: (seller.instagram as string | null | undefined) ?? null,
+          line: (seller.line as string | null | undefined) ?? null,
+          telegram: (seller.telegram as string | null | undefined) ?? null,
+        });
+      }
+    };
+
+    const handleContinuePayment = () => {
+      if (
+        transaction.payment?.midtransToken &&
+        transaction.payment?.midtransRedirectUrl
+      ) {
+        router.push({
+          pathname: "/payment",
+          params: {
+            transactionId: transaction.id,
+            snapToken: transaction.payment.midtransToken,
+            redirectUrl: transaction.payment.midtransRedirectUrl ?? "",
+          },
+        });
+      }
+    };
 
     return (
       <TouchableOpacity
@@ -154,6 +195,35 @@ export function TransactionList({
             </View>
           </View>
 
+          {/* Payment Action Buttons - Only show for purchases */}
+          {type === "purchases" && transaction.status === "PENDING" && (
+            <View style={styles.actionButtonContainer}>
+              {isDirect && transaction.seller && (
+                <Pressable
+                  style={styles.actionButton}
+                  onPress={handleSellerInfo}
+                >
+                  <Info size={16} color={COLORS.primary} />
+                  <Text style={styles.actionButtonText}>Seller Info</Text>
+                </Pressable>
+              )}
+
+              {isMidtrans &&
+                transaction.payment?.midtransToken &&
+                transaction.payment?.midtransRedirectUrl && (
+                  <Pressable
+                    style={styles.actionButton}
+                    onPress={handleContinuePayment}
+                  >
+                    <Info size={16} color={COLORS.primary} />
+                    <Text style={styles.actionButtonText}>
+                      Continue Payment
+                    </Text>
+                  </Pressable>
+                )}
+            </View>
+          )}
+
           {/* Date */}
           <Text style={styles.date}>{formatDate(transaction.createdAt)}</Text>
         </View>
@@ -175,17 +245,28 @@ export function TransactionList({
   }
 
   return (
-    <FlatList
-      data={transactions}
-      renderItem={renderTransaction}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={styles.listContainer}
-      showsVerticalScrollIndicator={false}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
-      ListFooterComponent={renderFooter}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.5}
-    />
+    <>
+      <FlatList
+        data={transactions}
+        renderItem={renderTransaction}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListFooterComponent={renderFooter}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.5}
+      />
+
+      {/* Direct Payment Modal */}
+      {selectedSeller && (
+        <DirectPaymentModal
+          visible={!!selectedSeller}
+          onClose={() => setSelectedSeller(null)}
+          seller={selectedSeller}
+        />
+      )}
+    </>
   );
 }
 
@@ -272,6 +353,26 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     color: COLORS.text.tertiary,
+  },
+  actionButtonContainer: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLORS.primary,
   },
   emptyContainer: {
     flex: 1,

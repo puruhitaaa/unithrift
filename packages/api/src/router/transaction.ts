@@ -212,6 +212,7 @@ export const transactionRouter = createTRPCRouter({
             },
           },
           payment: true,
+          seller: true, // Include seller info for direct payment contact
         },
       });
 
@@ -264,6 +265,24 @@ export const transactionRouter = createTRPCRouter({
       return {
         items,
         nextCursor,
+      };
+    }),
+
+  // Check if user has pending transaction for a listing
+  checkPendingTransaction: protectedProcedure
+    .input(z.object({ listingId: z.uuid() }))
+    .query(async ({ ctx, input }) => {
+      const pendingTransaction = await ctx.db.query.transaction.findFirst({
+        where: and(
+          eq(transaction.buyerId, ctx.session.user.id),
+          eq(transaction.listingId, input.listingId),
+          eq(transaction.status, "PENDING"),
+        ),
+      });
+
+      return {
+        hasPending: !!pendingTransaction,
+        transactionId: pendingTransaction?.id,
       };
     }),
 });

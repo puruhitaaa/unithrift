@@ -3,6 +3,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -67,92 +68,83 @@ export function DirectPaymentModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View className="flex-1 items-center justify-center bg-black/50 p-4">
-        <View className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+      <View style={styles.overlay}>
+        <View style={styles.container}>
           {/* Header with Close Button */}
-          <View className="flex-row items-center justify-between border-b border-gray-200 p-4">
-            <View className="flex-1" />
-            <Pressable
-              onPress={onClose}
-              className="rounded-full bg-gray-100 p-2"
-            >
+          <View style={styles.header}>
+            <View style={styles.headerSpacer} />
+            <Pressable onPress={onClose} style={styles.closeButton}>
               <X size={20} color="#374151" />
             </Pressable>
           </View>
 
-          <ScrollView className="max-h-[80vh]">
+          <ScrollView style={styles.scrollView}>
             {/* Success Icon */}
-            <View className="items-center py-6">
-              <View className="rounded-full bg-green-100 p-4">
+            <View style={styles.iconContainer}>
+              <View style={styles.iconBackground}>
                 <CheckCircle size={64} color="#16A34A" />
               </View>
             </View>
 
             {/* Congratulations Message */}
-            <View className="px-6 pb-4">
-              <Text className="text-center text-2xl font-bold text-gray-900">
-                Congratulations!
-              </Text>
-              <Text className="mt-2 text-center text-base text-gray-600">
+            <View style={styles.messageContainer}>
+              <Text style={styles.title}>Congratulations!</Text>
+              <Text style={styles.subtitle}>
                 Your direct payment request has been submitted successfully.
               </Text>
             </View>
 
             {/* Instructions */}
-            <View className="bg-green-50 px-6 py-4">
-              <Text className="text-center text-base font-semibold text-green-900">
+            <View style={styles.instructionsBanner}>
+              <Text style={styles.instructionsText}>
                 Please contact the seller to complete the payment
               </Text>
             </View>
 
             {/* Safety Warning */}
-            <View className="mx-6 mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <View className="mb-2 flex-row items-center">
+            <View style={styles.warningContainer}>
+              <View style={styles.warningHeader}>
                 <AlertTriangle size={20} color="#D97706" />
-                <Text className="ml-2 text-base font-semibold text-amber-900">
-                  Safety Tips
-                </Text>
+                <Text style={styles.warningTitle}>Safety Tips</Text>
               </View>
-              <View className="space-y-1">
-                <Text className="text-sm text-amber-800">
+              <View style={styles.warningList}>
+                <Text style={styles.warningItem}>
                   • Always inspect the product before making payment
                 </Text>
-                <Text className="text-sm text-amber-800">
+                <Text style={styles.warningItem}>
                   • Meet in a safe, public location
                 </Text>
-                <Text className="text-sm text-amber-800">
+                <Text style={styles.warningItem}>
                   • Beware of scams and suspicious requests
                 </Text>
-                <Text className="text-sm text-amber-800">
+                <Text style={styles.warningItem}>
                   • Never share sensitive personal information
                 </Text>
-                <Text className="text-sm text-amber-800">
+                <Text style={styles.warningItem}>
                   • Report suspicious activity to university security
                 </Text>
               </View>
             </View>
 
             {/* Seller Contact Information */}
-            <View className="mt-6 px-6">
-              <Text className="mb-3 text-lg font-bold text-gray-900">
-                Contact {seller.name}
-              </Text>
+            <View style={styles.contactSection}>
+              <Text style={styles.contactTitle}>Contact {seller.name}</Text>
 
               {hasAnyContact ? (
-                <View className="space-y-2">
+                <View style={styles.contactList}>
                   {seller.whatsapp && (
                     <Pressable
-                      onPress={() => openWhatsApp(seller.whatsapp!)}
-                      className="flex-row items-center rounded-lg border border-green-200 bg-green-50 p-4"
+                      onPress={() =>
+                        seller.whatsapp && openWhatsApp(seller.whatsapp)
+                      }
+                      style={styles.contactButtonWhatsApp}
                     >
-                      <View className="rounded-full bg-green-500 p-2">
+                      <View style={styles.contactIconWhatsApp}>
                         <Phone size={20} color="white" />
                       </View>
-                      <View className="ml-3 flex-1">
-                        <Text className="text-sm font-medium text-gray-600">
-                          WhatsApp
-                        </Text>
-                        <Text className="text-base font-semibold text-gray-900">
+                      <View style={styles.contactInfo}>
+                        <Text style={styles.contactLabel}>WhatsApp</Text>
+                        <Text style={styles.contactValue}>
                           {seller.whatsapp}
                         </Text>
                       </View>
@@ -161,17 +153,17 @@ export function DirectPaymentModal({
 
                   {seller.instagram && (
                     <Pressable
-                      onPress={() => openInstagram(seller.instagram!)}
-                      className="flex-row items-center rounded-lg border border-pink-200 bg-pink-50 p-4"
+                      onPress={() =>
+                        seller.instagram && openInstagram(seller.instagram)
+                      }
+                      style={styles.contactButtonInstagram}
                     >
-                      <View className="rounded-full bg-pink-500 p-2">
+                      <View style={styles.contactIconInstagram}>
                         <Instagram size={20} color="white" />
                       </View>
-                      <View className="ml-3 flex-1">
-                        <Text className="text-sm font-medium text-gray-600">
-                          Instagram
-                        </Text>
-                        <Text className="text-base font-semibold text-gray-900">
+                      <View style={styles.contactInfo}>
+                        <Text style={styles.contactLabel}>Instagram</Text>
+                        <Text style={styles.contactValue}>
                           @{seller.instagram.replace("@", "")}
                         </Text>
                       </View>
@@ -180,36 +172,32 @@ export function DirectPaymentModal({
 
                   {seller.line && (
                     <Pressable
-                      onPress={() => openLine(seller.line!)}
-                      className="flex-row items-center rounded-lg border border-green-200 bg-green-50 p-4"
+                      onPress={() => seller.line && openLine(seller.line)}
+                      style={styles.contactButtonLine}
                     >
-                      <View className="rounded-full bg-green-600 p-2">
+                      <View style={styles.contactIconLine}>
                         <MessageCircle size={20} color="white" />
                       </View>
-                      <View className="ml-3 flex-1">
-                        <Text className="text-sm font-medium text-gray-600">
-                          LINE
-                        </Text>
-                        <Text className="text-base font-semibold text-gray-900">
-                          {seller.line}
-                        </Text>
+                      <View style={styles.contactInfo}>
+                        <Text style={styles.contactLabel}>LINE</Text>
+                        <Text style={styles.contactValue}>{seller.line}</Text>
                       </View>
                     </Pressable>
                   )}
 
                   {seller.telegram && (
                     <Pressable
-                      onPress={() => openTelegram(seller.telegram!)}
-                      className="flex-row items-center rounded-lg border border-blue-200 bg-blue-50 p-4"
+                      onPress={() =>
+                        seller.telegram && openTelegram(seller.telegram)
+                      }
+                      style={styles.contactButtonTelegram}
                     >
-                      <View className="rounded-full bg-blue-500 p-2">
+                      <View style={styles.contactIconTelegram}>
                         <Send size={20} color="white" />
                       </View>
-                      <View className="ml-3 flex-1">
-                        <Text className="text-sm font-medium text-gray-600">
-                          Telegram
-                        </Text>
-                        <Text className="text-base font-semibold text-gray-900">
+                      <View style={styles.contactInfo}>
+                        <Text style={styles.contactLabel}>Telegram</Text>
+                        <Text style={styles.contactValue}>
                           @{seller.telegram.replace("@", "")}
                         </Text>
                       </View>
@@ -217,11 +205,11 @@ export function DirectPaymentModal({
                   )}
                 </View>
               ) : (
-                <View className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <Text className="text-center text-sm text-gray-600">
+                <View style={styles.noContactContainer}>
+                  <Text style={styles.noContactText}>
                     The seller hasn't added contact information yet.
                   </Text>
-                  <Text className="mt-1 text-center text-sm text-gray-600">
+                  <Text style={styles.noContactSubtext}>
                     Please try contacting them through the app or check back
                     later.
                   </Text>
@@ -230,14 +218,9 @@ export function DirectPaymentModal({
             </View>
 
             {/* Close Button */}
-            <View className="p-6">
-              <Pressable
-                onPress={onClose}
-                className="rounded-xl bg-[#8B0A1A] py-4"
-              >
-                <Text className="text-center text-base font-bold text-white">
-                  Got It
-                </Text>
+            <View style={styles.footer}>
+              <Pressable onPress={onClose} style={styles.gotItButton}>
+                <Text style={styles.gotItButtonText}>Got It</Text>
               </Pressable>
             </View>
           </ScrollView>
@@ -246,3 +229,226 @@ export function DirectPaymentModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  container: {
+    width: "100%",
+    maxWidth: 448,
+    backgroundColor: "white",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 25,
+    elevation: 10,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+    padding: 16,
+  },
+  headerSpacer: {
+    flex: 1,
+  },
+  closeButton: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 9999,
+    padding: 8,
+  },
+  scrollView: {
+    maxHeight: "80%",
+  },
+  iconContainer: {
+    alignItems: "center",
+    paddingVertical: 24,
+  },
+  iconBackground: {
+    backgroundColor: "#DCFCE7",
+    borderRadius: 9999,
+    padding: 16,
+  },
+  messageContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  title: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 8,
+  },
+  subtitle: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#4B5563",
+  },
+  instructionsBanner: {
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  instructionsText: {
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#14532D",
+  },
+  warningContainer: {
+    marginHorizontal: 24,
+    marginTop: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    backgroundColor: "#FFFBEB",
+    padding: 16,
+  },
+  warningHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  warningTitle: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#78350F",
+  },
+  warningList: {
+    gap: 4,
+  },
+  warningItem: {
+    fontSize: 14,
+    color: "#92400E",
+    marginBottom: 4,
+  },
+  contactSection: {
+    marginTop: 24,
+    paddingHorizontal: 24,
+  },
+  contactTitle: {
+    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  contactList: {
+    gap: 8,
+  },
+  contactButtonWhatsApp: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    backgroundColor: "#DCFCE7",
+    padding: 16,
+    marginBottom: 8,
+  },
+  contactButtonInstagram: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FBCFE8",
+    backgroundColor: "#FCE7F3",
+    padding: 16,
+    marginBottom: 8,
+  },
+  contactButtonLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    backgroundColor: "#DCFCE7",
+    padding: 16,
+    marginBottom: 8,
+  },
+  contactButtonTelegram: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    backgroundColor: "#DBEAFE",
+    padding: 16,
+    marginBottom: 8,
+  },
+  contactIconWhatsApp: {
+    backgroundColor: "#22C55E",
+    borderRadius: 9999,
+    padding: 8,
+  },
+  contactIconInstagram: {
+    backgroundColor: "#EC4899",
+    borderRadius: 9999,
+    padding: 8,
+  },
+  contactIconLine: {
+    backgroundColor: "#16A34A",
+    borderRadius: 9999,
+    padding: 8,
+  },
+  contactIconTelegram: {
+    backgroundColor: "#3B82F6",
+    borderRadius: 9999,
+    padding: 8,
+  },
+  contactInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  contactLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#4B5563",
+  },
+  contactValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  noContactContainer: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#F9FAFB",
+    padding: 16,
+  },
+  noContactText: {
+    textAlign: "center",
+    fontSize: 14,
+    color: "#4B5563",
+  },
+  noContactSubtext: {
+    marginTop: 4,
+    textAlign: "center",
+    fontSize: 14,
+    color: "#4B5563",
+  },
+  footer: {
+    padding: 24,
+  },
+  gotItButton: {
+    borderRadius: 12,
+    backgroundColor: "#8B0A1A",
+    paddingVertical: 16,
+  },
+  gotItButtonText: {
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "white",
+  },
+});

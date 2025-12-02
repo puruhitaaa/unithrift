@@ -40,6 +40,18 @@ export default function ItemDetailScreen() {
 
   const [showDirectPaymentModal, setShowDirectPaymentModal] = useState(false);
 
+  // Check if user already has pending transaction for this listing
+  const { data: pendingCheck } = useQuery(
+    trpc.transaction.checkPendingTransaction.queryOptions(
+      {
+        listingId: id ?? "",
+      },
+      {
+        enabled: !!id && !!session, // Only check if user is logged in and we have an id
+      },
+    ),
+  );
+
   // const initPayment = trpc.payment.initiatePayment.useMutation();
   const initPayment = useMutation(
     trpc.payment.initiatePayment.mutationOptions({
@@ -206,7 +218,13 @@ export default function ItemDetailScreen() {
           />
 
           {/* Only show purchase button if user is not the owner */}
-          {!isOwner && <ContactButton onPress={handlePurchase} />}
+          {!isOwner && (
+            <ContactButton
+              onPress={handlePurchase}
+              disabled={pendingCheck?.hasPending ?? false}
+              loading={initPayment.isPending}
+            />
+          )}
         </ScrollView>
 
         {/* Direct Payment Modal */}
