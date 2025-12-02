@@ -16,6 +16,10 @@ export const paymentRouter = createTRPCRouter({
     .input(
       z.object({
         listingId: z.uuid(),
+        paymentMethod: z
+          .enum(["MIDTRANS", "DIRECT"])
+          .optional()
+          .default("MIDTRANS"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -59,7 +63,7 @@ export const paymentRouter = createTRPCRouter({
             listingId: listingItem.id,
             amount: listingItem.price,
             status: "PENDING",
-            paymentMethod: "MIDTRANS",
+            paymentMethod: input.paymentMethod,
           })
           .returning();
 
@@ -70,10 +74,40 @@ export const paymentRouter = createTRPCRouter({
           });
         }
 
-        // Generate unique order ID for Midtrans
+        // Generate unique order ID
         const orderId = `ORDER-${newTransaction.id}`;
 
-        // 3. Create Midtrans transaction
+        // 3. For DIRECT payment, create a simple payment record without Midtrans
+        if (input.paymentMethod === "DIRECT") {
+          const [newPayment] = await tx
+            .insert(payment)
+            .values({
+              transactionId: newTransaction.id,
+              amount: listingItem.price,
+              status: "PENDING",
+              midtransOrderId: orderId,
+              midtransToken: null,
+              midtransRedirectUrl: null,
+            })
+            .returning();
+
+          if (!newPayment) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to create payment record",
+            });
+          }
+
+          return {
+            transactionId: newTransaction.id,
+            paymentId: newPayment.id,
+            snapToken: null,
+            redirectUrl: null,
+            isDirect: true,
+          };
+        }
+
+        // 4. For MIDTRANS payment, create Midtrans transaction
         try {
           const parameter = {
             transaction_details: {
@@ -102,7 +136,7 @@ export const paymentRouter = createTRPCRouter({
             parameter,
           )) as { token: string; redirect_url: string };
 
-          // 4. Create payment record with Midtrans details
+          // 5. Create payment record with Midtrans details
           const [newPayment] = await tx
             .insert(payment)
             .values({
@@ -127,6 +161,7 @@ export const paymentRouter = createTRPCRouter({
             paymentId: newPayment.id,
             snapToken: midtransTransaction.token,
             redirectUrl: midtransTransaction.redirect_url,
+            isDirect: false,
           };
         } catch (error) {
           throw new TRPCError({

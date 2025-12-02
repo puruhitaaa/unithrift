@@ -22,6 +22,11 @@ export const user = pgTable("user", (t) => ({
   createdAt: t.timestamp().notNull(),
   updatedAt: t.timestamp().notNull(),
   universityId: t.text().references(() => university.id),
+  // Social media fields for seller contact
+  whatsapp: t.text(), // WhatsApp number (with country code)
+  instagram: t.text(), // Instagram username
+  line: t.text(), // LINE ID
+  telegram: t.text(), // Telegram username
 }));
 
 export const session = pgTable("session", (t) => ({

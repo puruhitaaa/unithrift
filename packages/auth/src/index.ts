@@ -32,6 +32,26 @@ export function initAuth<
           required: false,
           defaultValue: null,
         },
+        whatsapp: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+        },
+        instagram: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+        },
+        line: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+        },
+        telegram: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+        },
       },
     },
     baseURL: options.baseUrl,

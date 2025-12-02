@@ -13,7 +13,9 @@ export default function RootLayout() {
   const pathname = usePathname();
 
   const shouldShowBottomNav =
-    !pathname.startsWith("/item/") && pathname !== "/listings";
+    !pathname.startsWith("/item/") &&
+    pathname !== "/listings" &&
+    pathname !== "/transactions";
 
   return (
     <QueryClientProvider client={queryClient}>

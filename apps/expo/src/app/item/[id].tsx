@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Alert, ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
+import { DirectPaymentModal } from "~/components/DirectPaymentModal";
 import {
   ContactButton,
   ImageGallery,
@@ -36,18 +38,26 @@ export default function ItemDetailScreen() {
 
   const { data: session } = authClient.useSession();
 
+  const [showDirectPaymentModal, setShowDirectPaymentModal] = useState(false);
+
   // const initPayment = trpc.payment.initiatePayment.useMutation();
   const initPayment = useMutation(
     trpc.payment.initiatePayment.mutationOptions({
       onSuccess: (data) => {
-        router.push({
-          pathname: "/payment",
-          params: {
-            transactionId: data.transactionId,
-            snapToken: data.snapToken,
-            redirectUrl: data.redirectUrl,
-          },
-        });
+        // Only navigate to payment page for gateway payment
+        if (!data.isDirect && data.snapToken && data.redirectUrl) {
+          router.push({
+            pathname: "/payment",
+            params: {
+              transactionId: data.transactionId,
+              snapToken: data.snapToken,
+              redirectUrl: data.redirectUrl,
+            },
+          });
+        } else {
+          // For direct payment, show the modal with seller contact info
+          setShowDirectPaymentModal(true);
+        }
       },
       onError: (error) => {
         Alert.alert(
@@ -58,7 +68,7 @@ export default function ItemDetailScreen() {
     }),
   );
 
-  const handlePurchase = async () => {
+  const handlePurchase = () => {
     // If the user is not authenticated, redirect them to the login screen
     // and preserve a redirectTo param so they can come back to the item page
     if (!session) {
@@ -72,22 +82,58 @@ export default function ItemDetailScreen() {
 
     if (!id) return;
 
+    // Show payment method selection dialog
+    Alert.alert(
+      "Select Payment Method",
+      "Choose how you would like to complete your payment:",
+      [
+        {
+          text: "Direct Payment",
+          onPress: () => {
+            void handleDirectPayment();
+          },
+        },
+        {
+          text: "Payment Gateway",
+          onPress: () => {
+            void handleGatewayPayment();
+          },
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
+  const handleDirectPayment = async () => {
+    if (!id) return;
+
     try {
-      // Initiate payment with Midtrans
+      // For direct payment, we'll use the same flow but mark it as direct
       await initPayment.mutateAsync({
         listingId: id,
+        paymentMethod: "DIRECT",
       });
-
-      // router.push({
-      //   pathname: "/payment",
-      //   params: {
-      //     transactionId: paymentData.transactionId,
-      //     snapToken: paymentData.snapToken,
-      //     redirectUrl: paymentData.redirectUrl,
-      //   },
-      // });
     } catch (error) {
-      // Handle errors (e.g., listing not available, user can't buy own item, etc.)
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to initiate payment";
+      Alert.alert("Payment Error", errorMessage);
+    }
+  };
+
+  const handleGatewayPayment = async () => {
+    if (!id) return;
+
+    try {
+      // Initiate payment with Midtrans gateway
+      await initPayment.mutateAsync({
+        listingId: id,
+        paymentMethod: "MIDTRANS",
+      });
+    } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to initiate payment";
       Alert.alert("Payment Error", errorMessage);
@@ -121,6 +167,9 @@ export default function ItemDetailScreen() {
 
   // Map the media to image URLs
   const images = itemData.media.map((m) => m.url);
+
+  // Check if the current user is the owner of the item
+  const isOwner = session?.user.id === itemData.seller.id;
 
   return (
     <>
@@ -156,8 +205,25 @@ export default function ItemDetailScreen() {
             }}
           />
 
-          <ContactButton onPress={handlePurchase} />
+          {/* Only show purchase button if user is not the owner */}
+          {!isOwner && <ContactButton onPress={handlePurchase} />}
         </ScrollView>
+
+        {/* Direct Payment Modal */}
+        <DirectPaymentModal
+          visible={showDirectPaymentModal}
+          onClose={() => {
+            setShowDirectPaymentModal(false);
+            void router.back();
+          }}
+          seller={{
+            name: itemData.seller.name,
+            whatsapp: itemData.seller.whatsapp,
+            instagram: itemData.seller.instagram,
+            line: itemData.seller.line,
+            telegram: itemData.seller.telegram,
+          }}
+        />
       </SafeAreaView>
     </>
   );
