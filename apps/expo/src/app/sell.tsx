@@ -116,16 +116,17 @@ export default function SellScreen() {
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please allow access to your photo library to add images.",
+          "Please allow access to your photo library to add media.",
         );
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: "images",
+        mediaTypes: ImagePicker.MediaTypeOptions.All, // Allow both images and videos
         allowsMultipleSelection: true,
         quality: 0.8,
         selectionLimit: 5 - images.length,
+        videoMaxDuration: 60, // Limit videos to 60 seconds
       });
 
       if (!result.canceled) {
@@ -134,8 +135,8 @@ export default function SellScreen() {
         setErrors((prev) => ({ ...prev, images: undefined }));
       }
     } catch (error) {
-      console.error("Error picking images:", error);
-      Alert.alert("Error", "Failed to select images. Please try again.");
+      console.error("Error picking media:", error);
+      Alert.alert("Error", "Failed to select media. Please try again.");
     }
   };
 
@@ -147,7 +148,7 @@ export default function SellScreen() {
     const newErrors: typeof errors = {};
 
     if (images.length === 0) {
-      newErrors.images = "Please add at least one photo";
+      newErrors.images = "Please add at least one photo or video";
     }
 
     if (!title.trim()) {
@@ -158,7 +159,7 @@ export default function SellScreen() {
 
     if (!price) {
       newErrors.price = "Price is required";
-    } else if (parseFloat(price) <= 0) {
+    } else if (parseInt(price) <= 0) {
       newErrors.price = "Price must be greater than 0";
     }
 
@@ -215,14 +216,33 @@ export default function SellScreen() {
     try {
       setIsUploadingMedia(true);
 
-      // Upload all images to Cloudinary
+      // Helper function to detect if a URI is a video based on extension
+      const isVideoFile = (uri: string): boolean => {
+        const videoExtensions = [
+          ".mp4",
+          ".mov",
+          ".avi",
+          ".mkv",
+          ".wmv",
+          ".flv",
+          ".webm",
+        ];
+        const lowerUri = uri.toLowerCase();
+        return videoExtensions.some((ext) => lowerUri.endsWith(ext));
+      };
+
+      // Upload all media (images and videos) to Cloudinary
       const uploadedMedia = await Promise.all(
-        images.map(async (imageUri, index) => {
-          const uploaded = await upload(imageUri, "image");
+        images.map(async (mediaUri, index) => {
+          // Detect if file is video or image
+          const fileType = isVideoFile(mediaUri) ? "video" : "image";
+
+          const uploaded = await upload(mediaUri, fileType);
           return {
             url: uploaded.secureUrl,
             publicId: uploaded.publicId,
-            type: "IMAGE" as const,
+            type:
+              fileType === "video" ? ("VIDEO" as const) : ("IMAGE" as const),
             order: index,
           };
         }),
@@ -234,8 +254,9 @@ export default function SellScreen() {
         throw new Error("Invalid category selected");
       }
 
-      // Convert price to cents (integer)
-      const priceInCents = Math.round(parseFloat(price) * 100);
+      // For IDR, we store the price in cents (multiply by 100)
+      // Since Indonesian Rupiah doesn't use decimal places, price is already a whole number
+      const priceInCents = parseInt(price) * 100;
 
       // Create listing
       await createListing.mutateAsync({
@@ -262,7 +283,7 @@ export default function SellScreen() {
     images.length > 0 &&
     title.trim().length >= 3 &&
     price &&
-    parseFloat(price) > 0 &&
+    parseInt(price) > 0 &&
     selectedCategoryId &&
     selectedCondition;
 
@@ -376,7 +397,7 @@ export default function SellScreen() {
               {/* Upload status */}
               {isUploading && (
                 <Text style={styles.uploadingText}>
-                  Uploading images... ({images.length} photo
+                  Uploading media... ({images.length} file
                   {images.length !== 1 ? "s" : ""})
                 </Text>
               )}

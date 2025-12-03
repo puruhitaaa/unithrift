@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Camera, X } from "lucide-react-native";
+import { File, X } from "lucide-react-native";
 
 interface SellImagePickerProps {
   images: string[];
@@ -25,9 +25,9 @@ export function SellImagePicker({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Photos</Text>
+      <Text style={styles.label}>Media</Text>
       <Text style={styles.helperText}>
-        Add up to {maxImages} photos (First photo will be the cover)
+        Add up to {maxImages} photos or videos (First will be the cover)
       </Text>
 
       <ScrollView
@@ -60,8 +60,8 @@ export function SellImagePicker({
             onPress={onAddImage}
             activeOpacity={0.7}
           >
-            <Camera size={32} color="#8B0A1A" />
-            <Text style={styles.addText}>Add Photo</Text>
+            <File size={32} color="#8B0A1A" />
+            <Text style={styles.addText}>Add Media</Text>
           </TouchableOpacity>
         )}
       </ScrollView>

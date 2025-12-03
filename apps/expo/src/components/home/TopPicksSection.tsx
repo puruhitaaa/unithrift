@@ -1,4 +1,10 @@
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
@@ -11,6 +17,13 @@ interface TopPicksSectionProps {
   category?: string;
   universityId?: string;
 }
+
+const COLORS = {
+  primary: "#8B0A1A",
+  text: {
+    primary: "#111827",
+  },
+} as const;
 
 export function TopPicksSection({
   category,
@@ -30,12 +43,12 @@ export function TopPicksSection({
   );
 
   return (
-    <View className="mb-6">
-      <View className="mb-4 flex-row items-center justify-between">
-        <Text className="text-lg font-semibold text-gray-900">Top Picks</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Top Picks</Text>
         {topPicks && topPicks.total > topPicks.items.length && (
           <TouchableOpacity onPress={() => router.push("/listings")}>
-            <Text className="font-medium text-[#8B0A1A]">See All</Text>
+            <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -44,28 +57,74 @@ export function TopPicksSection({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="max-h-48"
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
         >
-          <View className="flex-row gap-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <TopPickSkeleton key={index} />
-            ))}
-          </View>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <View key={index} style={styles.skeletonWrapper}>
+              <TopPickSkeleton />
+            </View>
+          ))}
         </ScrollView>
       ) : (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          className="max-h-48"
+          decelerationRate="fast"
+          snapToInterval={216} // 200 (card width) + 16 (gap)
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
         >
-          <View className="flex-row gap-4">
-            {topPicks?.items.map((item) => (
-              <TopSellerCard key={item.id} item={item} />
-            ))}
-          </View>
+          {topPicks?.items.map((item, index) => (
+            <View
+              key={item.id}
+              style={[
+                styles.cardWrapper,
+                index === topPicks.items.length - 1 && styles.lastCard,
+              ]}
+            >
+              <TopSellerCard item={item} />
+            </View>
+          ))}
         </ScrollView>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 24,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+  },
+  seeAllText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  scrollView: {
+    maxHeight: 280,
+  },
+  scrollContent: {
+    paddingRight: 16,
+  },
+  cardWrapper: {
+    marginRight: 16,
+  },
+  lastCard: {
+    marginRight: 0,
+  },
+  skeletonWrapper: {
+    marginRight: 16,
+  },
+});

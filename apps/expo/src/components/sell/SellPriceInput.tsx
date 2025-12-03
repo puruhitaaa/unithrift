@@ -12,21 +12,26 @@ export function SellPriceInput({
   error,
 }: SellPriceInputProps) {
   const handleChangeText = (text: string) => {
-    // Only allow numbers and decimal point
-    const cleaned = text.replace(/[^0-9.]/g, "");
-
-    // Ensure only one decimal point
-    const parts = cleaned.split(".");
-    if (parts.length > 2) {
-      return;
-    }
-
-    // Limit to 2 decimal places
-    if (parts[1] && parts[1].length > 2) {
-      return;
-    }
-
+    // Only allow numbers (no decimals for IDR)
+    const cleaned = text.replace(/[^0-9]/g, "");
     onChangeText(cleaned);
+  };
+
+  // Format number with thousands separator
+  const formatPrice = (value: string) => {
+    if (!value) return "";
+    return parseInt(value).toLocaleString("id-ID");
+  };
+
+  // Calculate suggested price range (±20%)
+  const getSuggestedRange = () => {
+    if (!value || parseInt(value) === 0) {
+      return "Rp 0 - Rp 0";
+    }
+    const numValue = parseInt(value);
+    const lower = Math.round(numValue * 0.8);
+    const upper = Math.round(numValue * 1.2);
+    return `Rp ${lower.toLocaleString("id-ID")} -Rp ${upper.toLocaleString("id-ID")}`;
   };
 
   return (
@@ -37,22 +42,21 @@ export function SellPriceInput({
       <Text style={styles.helperText}>Set a fair price for your item</Text>
 
       <View style={[styles.inputWrapper, error && styles.inputWrapperError]}>
-        <Text style={styles.currency}>$</Text>
+        <Text style={styles.currency}>Rp</Text>
         <TextInput
           style={styles.input}
-          value={value}
+          value={formatPrice(value)}
           onChangeText={handleChangeText}
-          placeholder="0.00"
+          placeholder="0"
           placeholderTextColor="#9CA3AF"
-          keyboardType="decimal-pad"
+          keyboardType="number-pad"
         />
       </View>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
 
       <Text style={styles.suggestedPrice}>
-        Suggested: ${value ? (parseFloat(value) * 0.8).toFixed(2) : "0.00"} - $
-        {value ? (parseFloat(value) * 1.2).toFixed(2) : "0.00"}
+        Suggested: {getSuggestedRange()}
       </Text>
     </View>
   );

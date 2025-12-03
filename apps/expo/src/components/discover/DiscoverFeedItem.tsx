@@ -11,9 +11,10 @@ import { ResizeMode, Video } from "expo-av";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Share2, ShoppingBag } from "lucide-react-native";
+import { Edit3, Share2, ShoppingBag } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
+import { authClient } from "~/utils/auth";
 
 type Listing = RouterOutputs["listing"]["list"]["items"][number];
 
@@ -30,12 +31,15 @@ export function DiscoverFeedItem({
 }: DiscoverFeedItemProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { data: session } = authClient.useSession();
   const videoRef = useRef<Video>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [status, setStatus] = useState({});
 
   const media = listing.media[0];
   const isVideo = media?.type === "VIDEO";
+
+  const isOwnListing = session?.user.id === listing.seller.id;
 
   useEffect(() => {
     if (videoRef.current) {
@@ -49,7 +53,21 @@ export function DiscoverFeedItem({
   }, [isActive]);
 
   const handlePress = () => {
-    router.push(`/item/${listing.id}`);
+    router.push({
+      pathname: "/item",
+      params: { id: listing.id },
+    });
+  };
+
+  const handleActionPress = () => {
+    if (isOwnListing) {
+      router.push({
+        pathname: "/listings",
+        params: { sellerId: session.user.id },
+      });
+    } else {
+      handlePress();
+    }
   };
 
   return (
@@ -108,9 +126,21 @@ export function DiscoverFeedItem({
           <Text style={styles.actionText}>Share</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton} onPress={handlePress}>
-          <ShoppingBag size={28} color="white" />
-          <Text style={styles.actionText}>Buy</Text>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleActionPress}
+        >
+          {isOwnListing ? (
+            <>
+              <Edit3 size={28} color="white" />
+              <Text style={styles.actionText}>Edit</Text>
+            </>
+          ) : (
+            <>
+              <ShoppingBag size={28} color="white" />
+              <Text style={styles.actionText}>Buy</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 

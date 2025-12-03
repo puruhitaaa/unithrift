@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import type { RouterInputs, RouterOutputs } from "../utils/api";
+import { ListingSkeleton } from "../components/home/ListingSkeleton";
 import { EditListingModal } from "../components/listings/EditListingModal";
 import { EmptyState } from "../components/listings/EmptyState";
 import { ListingCard } from "../components/listings/ListingCard";
@@ -16,9 +17,6 @@ type ListingItem = RouterOutputs["listing"]["list"]["items"][number];
 const COLORS = {
   primary: "#8B0A1A",
   background: "#F9FAFB",
-  border: "#E5E7EB",
-  skeleton: "#E5E7EB",
-  white: "#FFFFFF",
 } as const;
 
 export default function ListingsScreen() {
@@ -109,17 +107,7 @@ export default function ListingsScreen() {
         {isLoading ? (
           <View style={styles.gridContainer}>
             {Array.from({ length: 6 }).map((_, index) => (
-              <View key={index} style={styles.skeletonCard}>
-                <View style={styles.skeletonImage} />
-                <View style={styles.skeletonContent}>
-                  <View style={styles.skeletonTitle} />
-                  <View style={styles.skeletonPrice} />
-                  <View style={styles.skeletonSellerRow}>
-                    <View style={styles.skeletonAvatar} />
-                    <View style={styles.skeletonName} />
-                  </View>
-                </View>
-              </View>
+              <ListingSkeleton key={index} />
             ))}
           </View>
         ) : (
@@ -176,53 +164,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 16,
-  },
-  skeletonCard: {
-    width: "48%",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.white,
-    overflow: "hidden",
-  },
-  skeletonImage: {
-    width: "100%",
-    height: 128,
-    backgroundColor: COLORS.skeleton,
-  },
-  skeletonContent: {
-    padding: 12,
-  },
-  skeletonTitle: {
-    height: 16,
-    width: "75%",
-    backgroundColor: COLORS.skeleton,
-    borderRadius: 4,
-  },
-  skeletonPrice: {
-    height: 16,
-    width: "50%",
-    backgroundColor: COLORS.skeleton,
-    borderRadius: 4,
-    marginTop: 8,
-  },
-  skeletonSellerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  skeletonAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: COLORS.skeleton,
-  },
-  skeletonName: {
-    height: 12,
-    width: "33%",
-    backgroundColor: COLORS.skeleton,
-    borderRadius: 4,
-    marginLeft: 8,
   },
   loadingMore: {
     paddingVertical: 16,

@@ -111,7 +111,9 @@ export function ListingCard({
 
 const styles = StyleSheet.create({
   container: {
-    width: "48%",
+    flex: 1,
+    minWidth: "45%",
+    maxWidth: "48%",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
