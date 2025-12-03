@@ -141,112 +141,111 @@ export default function ProfileScreen() {
         }}
       />
 
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Profile Header */}
-          <ProfileHeader
-            userName={session.user.name}
-            userEmail={session.user.email}
-            userImage={
-              session.user.image ??
-              "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=900&auto=format&fit=crop&q=60"
-            }
-            universityName={
-              session.user.role === "admin"
-                ? undefined
-                : (profile?.university?.name ?? "No University Assigned")
-            }
-          />
+      {/* <SafeAreaView style={styles.safeArea}> */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Profile Header */}
+        <ProfileHeader
+          userName={session.user.name}
+          userEmail={session.user.email}
+          userImage={
+            session.user.image ??
+            "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=900&auto=format&fit=crop&q=60"
+          }
+          universityName={
+            session.user.role === "admin"
+              ? undefined
+              : (profile?.university?.name ?? "No University Assigned")
+          }
+        />
 
-          {/* Stats */}
-          {/* Stats */}
-          <ProfileStats
-            stats={{
-              listings: profile?.stats.listings ?? 0,
-              sold: profile?.stats.sold ?? 0,
-              rating: profile?.stats.rating ?? 0,
-            }}
-          />
+        {/* Stats */}
+        <ProfileStats
+          stats={{
+            listings: profile?.stats.listings ?? 0,
+            sold: profile?.stats.sold ?? 0,
+            rating: profile?.stats.rating ?? 0,
+          }}
+        />
 
-          {/* Account Menu */}
-          <ProfileMenuSection
-            title="Account"
-            items={[
-              {
-                icon: Settings,
-                label: "Account Settings",
-                onPress: () => console.log("Account Settings"),
-              },
-              {
-                icon: Package,
-                label: "My Listings",
-                onPress: () =>
-                  router.push({
-                    pathname: "/listings",
-                    params: { sellerId: session.user.id },
-                  }),
-              },
-              {
-                icon: ShoppingBag,
-                label: "My Transactions",
-                onPress: () => router.push("/transactions"),
-              },
-              // {
-              //   icon: MessageCircle,
-              //   label: "Messages",
-              //   onPress: () => console.log("Messages"),
-              // },
-              // {
-              //   icon: Heart,
-              //   label: "Saved Items",
-              //   onPress: () => console.log("Saved Items"),
-              // },
-            ]}
-          />
+        {/* Account Menu */}
+        <ProfileMenuSection
+          title="Account"
+          items={[
+            {
+              icon: Settings,
+              label: "Account Settings",
+              onPress: () => router.push("/account-settings"),
+            },
+            {
+              icon: Package,
+              label: "My Listings",
+              onPress: () =>
+                router.push({
+                  pathname: "/listings",
+                  params: { sellerId: session.user.id },
+                }),
+            },
+            {
+              icon: ShoppingBag,
+              label: "My Transactions",
+              onPress: () => router.push("/transactions"),
+            },
+            // {
+            //   icon: MessageCircle,
+            //   label: "Messages",
+            //   onPress: () => console.log("Messages"),
+            // },
+            // {
+            //   icon: Heart,
+            //   label: "Saved Items",
+            //   onPress: () => console.log("Saved Items"),
+            // },
+          ]}
+        />
 
-          {/* Support Menu */}
-          <ProfileMenuSection
-            title="Support"
-            items={[
-              {
-                icon: HelpCircle,
-                label: "Help Center",
-                onPress: () => console.log("Help Center"),
-              },
-              {
-                icon: Shield,
-                label: "Privacy & Safety",
-                onPress: () => console.log("Privacy & Safety"),
-              },
-            ]}
-          />
+        {/* Support Menu */}
+        <ProfileMenuSection
+          title="Support"
+          items={[
+            {
+              icon: HelpCircle,
+              label: "Help Center",
+              onPress: () => console.log("Help Center"),
+            },
+            {
+              icon: Shield,
+              label: "Privacy & Safety",
+              onPress: () => console.log("Privacy & Safety"),
+            },
+          ]}
+        />
 
-          {/* Logout Menu */}
-          <ProfileMenuSection
-            items={[
-              {
-                icon: LogOut,
-                label: "Sign Out",
-                onPress: handleLogout,
-                isDestructive: true,
-              },
-            ]}
-          />
-        </ScrollView>
-      </SafeAreaView>
+        {/* Logout Menu */}
+        <ProfileMenuSection
+          items={[
+            {
+              icon: LogOut,
+              label: "Sign Out",
+              onPress: handleLogout,
+              isDestructive: true,
+            },
+          ]}
+        />
+      </ScrollView>
+      {/* </SafeAreaView> */}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F9FAFB",
-  },
+  // safeArea: {
+  //   flex: 1,
+  //   backgroundColor: "#F9FAFB",
+  // },
   scrollView: {
     flex: 1,
   },

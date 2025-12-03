@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { and, eq, sql } from "@unithrift/db";
 import { listing, user } from "@unithrift/db/schema";
 
@@ -44,4 +46,35 @@ export const userRouter = createTRPCRouter({
       },
     };
   }),
+
+  updateContactInfo: protectedProcedure
+    .input(
+      z.object({
+        whatsapp: z.string().optional().nullable(),
+        instagram: z.string().optional().nullable(),
+        line: z.string().optional().nullable(),
+        telegram: z.string().optional().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const [updatedUser] = await ctx.db
+        .update(user)
+        .set({
+          whatsapp: input.whatsapp,
+          instagram: input.instagram,
+          line: input.line,
+          telegram: input.telegram,
+          updatedAt: new Date(),
+        })
+        .where(eq(user.id, userId))
+        .returning();
+
+      if (!updatedUser) {
+        throw new Error("Failed to update contact information");
+      }
+
+      return updatedUser;
+    }),
 });

@@ -44,7 +44,7 @@ export default function ItemDetailScreen() {
   const { data: pendingCheck } = useQuery(
     trpc.transaction.checkPendingTransaction.queryOptions(
       {
-        listingId: id ?? "",
+        listingId: id,
       },
       {
         enabled: !!id && !!session, // Only check if user is logged in and we have an id
