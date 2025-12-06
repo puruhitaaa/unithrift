@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import type { AVPlaybackStatus } from "expo-av";
+import { memo, useCallback, useEffect, useRef } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -21,40 +22,75 @@ type Listing = RouterOutputs["listing"]["list"]["items"][number];
 interface DiscoverFeedItemProps {
   listing: Listing;
   isActive: boolean;
+  isFocused: boolean;
   height: number;
 }
 
-export function DiscoverFeedItem({
+function DiscoverFeedItemComponent({
   listing,
   isActive,
+  isFocused,
   height,
 }: DiscoverFeedItemProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: session } = authClient.useSession();
   const videoRef = useRef<Video>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [status, setStatus] = useState({});
 
   const media = listing.media[0];
   const isVideo = media?.type === "VIDEO";
-
   const isOwnListing = session?.user.id === listing.seller.id;
 
+  // Combined active state: only play when item is active AND screen is focused
+  const shouldPlay = isActive && isFocused;
+
+  // Handle video playback based on active/focus state
   useEffect(() => {
-    if (videoRef.current) {
-      if (isActive) {
-        void videoRef.current.playAsync();
-      } else {
-        void videoRef.current.pauseAsync();
-        void videoRef.current.setPositionAsync(0);
+    const video = videoRef.current;
+    if (!video || !isVideo) return;
+
+    const controlPlayback = async () => {
+      try {
+        if (shouldPlay) {
+          await video.playAsync();
+        } else {
+          await video.pauseAsync();
+          // Reset to beginning when stopping
+          await video.setPositionAsync(0);
+        }
+      } catch (error) {
+        // Video may be unloaded or in an invalid state
+        console.debug("Video playback control error:", error);
       }
+    };
+
+    void controlPlayback();
+  }, [shouldPlay, isVideo]);
+
+  // Cleanup: unload video when component unmounts or screen loses focus
+  useEffect(() => {
+    const video = videoRef.current;
+
+    return () => {
+      if (video && isVideo) {
+        // Unload video to free up resources
+        video.unloadAsync().catch(() => {
+          // Ignore errors during cleanup
+        });
+      }
+    };
+  }, [isVideo]);
+
+  // Handle playback status updates with error logging
+  const handlePlaybackStatusUpdate = useCallback((status: AVPlaybackStatus) => {
+    if (!status.isLoaded && status.error) {
+      console.warn("Video playback error:", status.error);
     }
-  }, [isActive]);
+  }, []);
 
   const handlePress = () => {
     router.push({
-      pathname: "/item",
+      pathname: "/item/[id]",
       params: { id: listing.id },
     });
   };
@@ -82,8 +118,12 @@ export function DiscoverFeedItem({
               source={{ uri: media.url }}
               resizeMode={ResizeMode.COVER}
               isLooping
-              shouldPlay={isActive}
-              onPlaybackStatusUpdate={setStatus}
+              shouldPlay={shouldPlay}
+              isMuted={false}
+              onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+              // Improve video load performance
+              progressUpdateIntervalMillis={1000}
+              positionMillis={0}
             />
           ) : (
             <Image
@@ -91,6 +131,8 @@ export function DiscoverFeedItem({
               style={styles.media}
               contentFit="cover"
               transition={200}
+              // Cache images for better performance
+              cachePolicy="memory-disk"
             />
           )
         ) : (
@@ -173,6 +215,20 @@ export function DiscoverFeedItem({
     </View>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export const DiscoverFeedItem = memo(
+  DiscoverFeedItemComponent,
+  (prevProps, nextProps) => {
+    // Only re-render if these props change
+    return (
+      prevProps.listing.id === nextProps.listing.id &&
+      prevProps.isActive === nextProps.isActive &&
+      prevProps.isFocused === nextProps.isFocused &&
+      prevProps.height === nextProps.height
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {

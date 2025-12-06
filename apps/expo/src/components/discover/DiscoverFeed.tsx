@@ -1,6 +1,7 @@
 import type { ViewToken } from "react-native";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, FlatList, StyleSheet, View } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { trpc } from "~/utils/api";
@@ -16,6 +17,20 @@ export function DiscoverFeed() {
     Dimensions.get("window").height,
   );
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(true);
+
+  // Track focus state for pausing videos on route change
+  useFocusEffect(
+    useCallback(() => {
+      // Screen is focused
+      setIsFocused(true);
+
+      return () => {
+        // Screen is unfocused - pause all media
+        setIsFocused(false);
+      };
+    }, []),
+  );
 
   const {
     data,
@@ -42,15 +57,31 @@ export function DiscoverFeed() {
     [data],
   );
 
+  // Stable ref for items to avoid onViewableItemsChanged recreating
+  const itemsRef = useRef(items);
+  // Update ref in effect to avoid updating during render
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
       if (viewableItems.length > 0 && viewableItems[0]?.item) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const item = viewableItems[0].item as (typeof items)[0];
+        const item = viewableItems[0].item as (typeof itemsRef.current)[0];
         setActiveId(item.id);
       }
     },
-    [items],
+    [], // Stable callback - uses ref for items
+  );
+
+  // Optimized getItemLayout for known item heights (paging enabled)
+  const getItemLayout = useCallback(
+    (_: unknown, index: number) => ({
+      length: containerHeight,
+      offset: containerHeight * index,
+      index,
+    }),
+    [containerHeight],
   );
 
   const renderItem = useCallback(
@@ -58,12 +89,13 @@ export function DiscoverFeed() {
       return (
         <DiscoverFeedItem
           listing={item}
-          isActive={item.id === activeId}
+          isActive={item.id === activeId && isFocused}
+          isFocused={isFocused}
           height={containerHeight}
         />
       );
     },
-    [activeId, containerHeight],
+    [activeId, containerHeight, isFocused],
   );
 
   return (
@@ -93,6 +125,8 @@ export function DiscoverFeed() {
         removeClippedSubviews={true}
         initialNumToRender={1}
         maxToRenderPerBatch={2}
+        getItemLayout={getItemLayout}
+        extraData={`${activeId}-${isFocused}`}
       />
     </View>
   );
