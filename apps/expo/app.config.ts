@@ -30,11 +30,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     edgeToEdgeEnabled: true,
   },
-  // extra: {
-  //   eas: {
-  //     projectId: "your-eas-project-id",
-  //   },
-  // },
+  // Pass environment variables to the app via Constants.expoConfig.extra
+  // This is useful in monorepos where the .env file is in the root
+  extra: {
+    // eas: {
+    //   projectId: "your-eas-project-id",
+    // },
+    // Midtrans client key for payment integration
+    midtransClientKey:
+      process.env.EXPO_PUBLIC_MIDTRANS_CLIENT_KEY ??
+      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
+      "",
+  },
   experiments: {
     tsconfigPaths: true,
     typedRoutes: true,

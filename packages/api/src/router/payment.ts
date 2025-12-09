@@ -1,14 +1,11 @@
-import crypto from "crypto";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { eq } from "@unithrift/db";
 import { listing, payment, transaction } from "@unithrift/db/schema";
 
-import type { PaymentStatus } from "../types/midtrans-webhook";
 import { snap } from "../lib/midtrans";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { midtransWebhookSchema } from "../types/midtrans-webhook";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const paymentRouter = createTRPCRouter({
   // Initiate a payment for a listing (creates transaction + payment + Midtrans token)
@@ -193,121 +190,6 @@ export const paymentRouter = createTRPCRouter({
         status: paymentRecord.status,
         amount: paymentRecord.amount,
         updatedAt: paymentRecord.updatedAt,
-      };
-    }),
-
-  // Handle Midtrans webhook notifications
-  handleWebhook: publicProcedure
-    .input(midtransWebhookSchema)
-    .mutation(async ({ ctx, input }) => {
-      // 1. Verify signature
-      const serverKey = process.env.MIDTRANS_SERVER_KEY;
-      const hash = crypto
-        .createHash("sha512")
-        .update(
-          `${input.order_id}${input.status_code}${input.gross_amount}${serverKey}`,
-        )
-        .digest("hex");
-
-      if (hash !== input.signature_key) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Invalid signature",
-        });
-      }
-
-      // 2. Map Midtrans status to our payment status
-      let paymentStatus: PaymentStatus = "pending";
-      let transactionStatus: "PENDING" | "PAID" | "CANCELLED" = "PENDING";
-
-      if (input.transaction_status === "capture") {
-        paymentStatus = input.fraud_status === "accept" ? "success" : "pending";
-        transactionStatus =
-          input.fraud_status === "accept" ? "PAID" : "PENDING";
-      } else if (input.transaction_status === "settlement") {
-        paymentStatus = "success";
-        transactionStatus = "PAID";
-      } else if (
-        input.transaction_status === "cancel" ||
-        input.transaction_status === "deny"
-      ) {
-        paymentStatus = "failed";
-        transactionStatus = "CANCELLED";
-      } else if (input.transaction_status === "expire") {
-        paymentStatus = "expired";
-        transactionStatus = "CANCELLED";
-      } else if (
-        input.transaction_status === "refund" ||
-        input.transaction_status === "partial_refund"
-      ) {
-        paymentStatus = "refunded";
-        transactionStatus = "CANCELLED";
-      } else if (input.transaction_status === "pending") {
-        paymentStatus = "pending";
-        transactionStatus = "PENDING";
-      }
-
-      // 3. Update payment and transaction in database
-      await ctx.db.transaction(async (tx) => {
-        // Find payment by Midtrans order ID
-        const paymentRecord = await tx.query.payment.findFirst({
-          where: eq(payment.midtransOrderId, input.order_id),
-        });
-
-        if (!paymentRecord) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Payment not found for order ID",
-          });
-        }
-
-        // Update payment status
-        await tx
-          .update(payment)
-          .set({
-            status: paymentStatus.toUpperCase() as
-              | "PENDING"
-              | "SUCCESS"
-              | "FAILED"
-              | "EXPIRED",
-            updatedAt: new Date(),
-          })
-          .where(eq(payment.id, paymentRecord.id));
-
-        // Update transaction status
-        await tx
-          .update(transaction)
-          .set({
-            status: transactionStatus,
-            updatedAt: new Date(),
-          })
-          .where(eq(transaction.id, paymentRecord.transactionId));
-
-        // If payment is successful, mark listing as sold
-        if (paymentStatus === "success") {
-          const transactionRecord = await tx.query.transaction.findFirst({
-            where: eq(transaction.id, paymentRecord.transactionId),
-          });
-
-          if (transactionRecord) {
-            await tx
-              .update(listing)
-              .set({
-                status: "SOLD",
-                updatedAt: new Date(),
-              })
-              .where(eq(listing.id, transactionRecord.listingId));
-          }
-        }
-      });
-
-      return {
-        success: true,
-        paymentStatus,
-        transactionStatus,
-        orderId: input.order_id,
-        transactionId: input.transaction_id,
-        message: `Payment ${paymentStatus}`,
       };
     }),
 });

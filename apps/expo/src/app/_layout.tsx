@@ -16,7 +16,8 @@ export default function RootLayout() {
     !pathname.startsWith("/item/") &&
     pathname !== "/listings" &&
     pathname !== "/transactions" &&
-    pathname !== "/account-settings";
+    pathname !== "/account-settings" &&
+    pathname !== "/payment";
 
   return (
     <QueryClientProvider client={queryClient}>
