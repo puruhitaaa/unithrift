@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 
@@ -41,17 +41,34 @@ export function FreshFindsSection({
       </View>
 
       {freshFindLoading ? (
-        <View className="flex-row flex-wrap gap-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <ListingSkeleton key={index} />
-          ))}
-        </View>
+        <FlatList
+          data={Array.from({ length: 4 })}
+          keyExtractor={(_, index) => `fresh-skeleton-${index}`}
+          renderItem={() => <ListingSkeleton />}
+          numColumns={2}
+          columnWrapperStyle={{
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+          scrollEnabled={false}
+        />
       ) : (
-        <View className="flex-row flex-wrap gap-4">
-          {freshFinds?.items.map((listing) => (
-            <FreshFindCard key={listing.id} item={listing} />
-          ))}
-        </View>
+        <FlatList
+          data={freshFinds?.items ?? []}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <FreshFindCard item={item} />}
+          numColumns={2}
+          columnWrapperStyle={{
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+          scrollEnabled={false}
+          ListEmptyComponent={
+            <Text className="text-gray-500">
+              No fresh finds available right now
+            </Text>
+          }
+        />
       )}
     </View>
   );
